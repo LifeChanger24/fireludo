@@ -63,7 +63,7 @@
         .play-status { display: flex; align-items: center; gap: 4px; font-size: 9px; color: #98a1ad; font-weight: 600; padding-left: 2px; }
         .dot { width: 5px; height: 5px; background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71; }
 
-        /* --- FIXED BOTTOM NAV ( মাপ এবং এলাইনমেন্ট ঠিক করা হয়েছে ) --- */
+        /* --- FIXED BOTTOM NAV --- */
         .bottom-nav-container { 
             position: fixed; 
             bottom: 20px; 
@@ -138,7 +138,9 @@
             <div class="balance-pill">
                 <span class="coin-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#26A17B"/><path d="M12.5 7H7V9H11V17H13V9H17V7H12.5Z" fill="white"/></svg>
-                </span> 1,561
+                </span> 
+                <!-- Dynamic Balance -->
+                <span id="userBalance">0.00</span>
                 <div class="plus-btn" onclick="location.href='deposit.html'">+</div>
             </div>
             <div class="notif-btn" onclick="location.href='notification.html'">
@@ -221,7 +223,42 @@
     </div>
 </div>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
+
 <script>
+    // ফায়ারবেস কনফিগ
+    const firebaseConfig = {
+        apiKey: "AIzaSyCaA8ENsK1fMw4U88CNLU60tO4ZfRj01bE",
+        authDomain: "fireludo1-54e54.firebaseapp.com",
+        projectId: "fireludo1-54e54",
+        storageBucket: "fireludo1-54e54.firebasestorage.app",
+        messagingSenderId: "558876956952",
+        appId: "1:558876956952:web:1c849226cbaf956385266d",
+        measurementId: "G-VQ93CQZNXN"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ব্যালেন্স চেক লজিক
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            db.collection("users").doc(user.uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    const currentBalance = userData.balance || 0;
+                    document.getElementById("userBalance").innerText = currentBalance.toFixed(2);
+                }
+            });
+        } else {
+            window.location.href = "index.html";
+        }
+    });
+
     function filterGames() {
         let input = document.getElementById('gameSearch').value.toLowerCase();
         let cards = document.getElementsByClassName('game-card-mini');
