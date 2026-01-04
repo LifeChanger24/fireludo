@@ -5,19 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Withdraw - Fiery Ludo</title>
     <style>
-        /* --- RESET & VARIABLES --- */
+        /* --- RESET & VARIABLES (অপরিবর্তিত) --- */
         :root {
             --bg-body: #0B0E14; 
             --bg-card: #1A1D26; 
             --bg-input: #12141a;
-            
             --green: #00FF94;
             --red: #FF4757;
             --yellow: #F0B90B;
             --purple: #8247E5;
             --blue: #0052FF;
             --navy: #28A0F0;
-            
             --text-white: #ffffff;
             --text-muted: #8b92a3;
             --border-color: rgba(255, 255, 255, 0.08);
@@ -144,7 +142,7 @@
             position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
             color: var(--green); font-size: 12px; font-weight: bold; cursor: pointer;
         }
-        .paste-btn { color: var(--accent-blue); font-size: 18px; cursor: pointer; }
+        .paste-btn { color: #3b82f6; font-size: 18px; cursor: pointer; }
 
         /* --- 3. SUMMARY BOX --- */
         .summary-box {
@@ -181,16 +179,15 @@
 
 <div class="app-container">
 
-    <!-- Header - Back button linked to wallet.html -->
     <div class="header">
         <a href="wallet.html" class="back-btn">←</a>
         <h2>Withdraw USDT</h2>
-        <span class="history-icon">🕒</span>
+        <span class="history-icon" onclick="location.href='notification.html'">🕒</span>
     </div>
 
     <div class="content-scroll">
         
-        <div class="avail-bal">Available: <span id="max-bal">1561.45</span> USDT</div>
+        <div class="avail-bal">Available: <span id="max-bal">0.00</span> USDT</div>
 
         <!-- 1. Custom Network Dropdown -->
         <span class="label">Select Network</span>
@@ -262,7 +259,43 @@
 
 </div>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
+
 <script>
+    // ফায়ারবেস কনফিগ
+    const firebaseConfig = {
+        apiKey: "AIzaSyCaA8ENsK1fMw4U88CNLU60tO4ZfRj01bE",
+        authDomain: "fireludo1-54e54.firebaseapp.com",
+        projectId: "fireludo1-54e54",
+        storageBucket: "fireludo1-54e54.firebasestorage.app",
+        messagingSenderId: "558876956952",
+        appId: "1:558876956952:web:1c849226cbaf956385266d",
+        measurementId: "G-VQ93CQZNXN"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentBalance = 0;
+
+    // ব্যালেন্স আপডেট লজিক
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            db.collection("users").doc(user.uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    currentBalance = doc.data().balance || 0;
+                    document.getElementById("max-bal").innerText = currentBalance.toFixed(2);
+                }
+            });
+        } else {
+            window.location.href = "index.html";
+        }
+    });
+
     const fee = 0.20;
     const minWithdraw = 1.00;
     let selectedNetwork = 'BSC (BEP20)';
@@ -283,7 +316,6 @@
         toggleDropdown();
     }
 
-    // Close dropdown if clicked outside
     window.onclick = function(event) {
         if (!event.target.closest('.dropdown-container')) {
             document.getElementById('dropOptions').classList.remove('show');
@@ -302,8 +334,7 @@
     }
 
     function setMax() {
-        const max = document.getElementById('max-bal').innerText;
-        document.getElementById('amount-input').value = max;
+        document.getElementById('amount-input').value = currentBalance.toFixed(2);
         calculate();
     }
 
@@ -325,8 +356,9 @@
 
         displayAmt.innerText = inputVal.toFixed(2) + " USDT";
 
-        if (inputVal < minWithdraw) {
+        if (inputVal < minWithdraw || inputVal > currentBalance) {
             errorMsg.style.display = 'block';
+            errorMsg.innerText = inputVal > currentBalance ? "Insufficient balance!" : "Minimum withdrawal is 1.00 USDT";
             finalAmt.innerText = "0.00 USDT";
             btn.classList.remove('active');
         } else {
@@ -334,7 +366,7 @@
             let receive = inputVal - fee;
             finalAmt.innerText = (receive > 0 ? receive : 0).toFixed(2) + " USDT";
             
-            if(addr.length > 5) {
+            if(addr.length > 10) {
                 btn.classList.add('active');
             } else {
                 btn.classList.remove('active');
@@ -347,7 +379,9 @@
     function processWithdraw() {
         const amt = document.getElementById('amount-input').value;
         const addr = document.getElementById('addr-input').value;
-        alert(`Request Sent!\n\nAmount: ${amt} USDT\nNet: ${selectedNetwork}\nFee: ${fee} USDT\n\nTo: ${addr}`);
+        
+        // এখানে আপনি ভবিষ্যতে ফায়ারবেসে উইথড্র রিকোয়েস্ট সেভ করার কোড লিখবেন
+        alert(`Withdrawal Request Sent!\n\nAmount: ${amt} USDT\nNet: ${selectedNetwork}\nFee: ${fee} USDT\n\nTo: ${addr}`);
     }
 </script>
 
