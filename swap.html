@@ -5,17 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Swap - Fiery Ludo</title>
     <style>
-        /* --- RESET & VARIABLES --- */
+        /* --- RESET & VARIABLES (১০০% অপরিবর্তিত) --- */
         :root {
             --bg-body: #0B0E14; 
             --bg-card: #1e2029;
-            
             --gold: #FFD700;
             --usdt-green: #26a17b;
             --text-white: #ffffff;
             --text-gray: #94a3b8;
             --border: rgba(255,255,255,0.1);
-            
             --ludo-blue: #3b82f6; 
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -50,7 +48,7 @@
         /* --- CONTENT AREA --- */
         .content { 
             padding: 20px; flex: 1; overflow-y: auto; 
-            padding-bottom: 40px; /* নেভিগেশন বার নেই তাই প্যাডিং কমানো হয়েছে */
+            padding-bottom: 40px;
         }
 
         /* --- SWAP CARDS --- */
@@ -136,7 +134,7 @@
     <div class="header">
         <div class="back-btn" onclick="window.location.href='wallet.html'">&#8592;</div>
         <div class="title">Swap Assets</div>
-        <div class="history-btn">🕒</div>
+        <div class="history-btn" onclick="window.location.href='notification.html'">🕒</div>
     </div>
 
     <!-- CONTENT -->
@@ -149,7 +147,7 @@
             <div class="swap-card" id="cardFrom">
                 <div class="input-row">
                     <span class="label">From</span>
-                    <span class="label">Balance: <span class="bal-val" id="balFrom">500.00</span></span>
+                    <span class="label">Balance: <span class="bal-val" id="balFrom">0.00</span></span>
                 </div>
                 <div class="input-row">
                     <input type="number" class="amount-input" id="inpFrom" placeholder="0" oninput="calculateSwap()">
@@ -175,7 +173,7 @@
             <div class="swap-card" id="cardTo">
                 <div class="input-row">
                     <span class="label">To (Estimate)</span>
-                    <span class="label">Balance: <span class="bal-val" id="balTo">100.00</span></span>
+                    <span class="label">Balance: <span class="bal-val" id="balTo">0.00</span></span>
                 </div>
                 <div class="input-row">
                     <input type="number" class="amount-input" id="inpTo" placeholder="0" readonly>
@@ -191,7 +189,7 @@
 
         <!-- RATE INFO -->
         <div class="info-row">
-            <span class="rate-text" id="rateText">1 GOLD ≈ 0.10 USDT</span>
+            <span class="rate-text" id="rateText">1 GOLD ≈ 0.01 USDT</span>
             <span class="refresh-icon">🔄</span>
         </div>
 
@@ -210,18 +208,67 @@
 
 </div>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
+
 <script>
+    // ফায়ারবেস কনফিগ
+    const firebaseConfig = {
+        apiKey: "AIzaSyCaA8ENsK1fMw4U88CNLU60tO4ZfRj01bE",
+        authDomain: "fireludo1-54e54.firebaseapp.com",
+        projectId: "fireludo1-54e54",
+        storageBucket: "fireludo1-54e54.firebasestorage.app",
+        messagingSenderId: "558876956952",
+        appId: "1:558876956952:web:1c849226cbaf956385266d",
+        measurementId: "G-VQ93CQZNXN"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     // --- SWAP LOGIC ---
-    let rate = 0.10; // 1 Gold = 0.10 USDT
+    let rate = 0.01; // ধরে নিচ্ছি ১০০ গোল্ড = ১ ইউএসডিটি (আপনার ওয়ালেট পেজের লজিক অনুযায়ী)
     let isGoldToUsdt = true;
-    let balanceGold = 500.00;
-    let balanceUsdt = 100.00;
+    let balanceGold = 0;
+    let balanceUsdt = 0;
+
+    // ডাটাবেস থেকে ব্যালেন্স আনা
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            db.collection("users").doc(user.uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    balanceUsdt = userData.balance || 0;
+                    balanceGold = userData.gold || 0;
+                    updateUIBalances();
+                }
+            });
+        } else {
+            window.location.href = "index.html";
+        }
+    });
+
+    function updateUIBalances() {
+        const fromBal = document.getElementById('balFrom');
+        const toBal = document.getElementById('balTo');
+        
+        if(isGoldToUsdt) {
+            fromBal.innerText = balanceGold;
+            toBal.innerText = balanceUsdt.toFixed(2);
+        } else {
+            fromBal.innerText = balanceUsdt.toFixed(2);
+            toBal.innerText = balanceGold;
+        }
+    }
 
     function calculateSwap() {
         const input = document.getElementById('inpFrom').value;
         const output = document.getElementById('inpTo');
         
-        if(input === '') {
+        if(input === '' || input <= 0) {
             output.value = '';
             return;
         }
@@ -236,9 +283,9 @@
     }
 
     function setPercent(pct) {
-        const bal = isGoldToUsdt ? balanceGold : balanceUsdt;
-        const amount = (bal * pct).toFixed(2);
-        document.getElementById('inpFrom').value = amount;
+        const currentFromBal = isGoldToUsdt ? balanceGold : balanceUsdt;
+        const amount = (currentFromBal * pct);
+        document.getElementById('inpFrom').value = isGoldToUsdt ? Math.floor(amount) : amount.toFixed(2);
         calculateSwap();
     }
 
@@ -253,35 +300,41 @@
         const toTxt = document.getElementById('txtTo');
         const fromIcon = document.getElementById('iconFrom');
         const toIcon = document.getElementById('iconTo');
-        const fromBal = document.getElementById('balFrom');
-        const toBal = document.getElementById('balTo');
         const rateTxt = document.getElementById('rateText');
 
         if(isGoldToUsdt) {
             fromTxt.innerText = "GOLD"; toTxt.innerText = "USDT";
             fromIcon.innerText = "🟡"; toIcon.innerText = "₮";
             fromIcon.className = "t-icon icon-gold"; toIcon.className = "t-icon icon-usdt";
-            fromBal.innerText = balanceGold.toFixed(2); toBal.innerText = balanceUsdt.toFixed(2);
-            rateTxt.innerText = "1 GOLD ≈ 0.10 USDT";
+            rateTxt.innerText = "1 GOLD ≈ 0.01 USDT";
         } else {
             fromTxt.innerText = "USDT"; toTxt.innerText = "GOLD";
             fromIcon.innerText = "₮"; toIcon.innerText = "🟡";
             fromIcon.className = "t-icon icon-usdt"; toIcon.className = "t-icon icon-gold";
-            fromBal.innerText = balanceUsdt.toFixed(2); toBal.innerText = balanceGold.toFixed(2);
-            rateTxt.innerText = "1 USDT ≈ 10.0 GOLD";
+            rateTxt.innerText = "1 USDT ≈ 100 GOLD";
         }
         
+        updateUIBalances();
         document.getElementById('inpFrom').value = '';
         document.getElementById('inpTo').value = '';
     }
 
     function confirmSwap() {
-        const amt = document.getElementById('inpFrom').value;
+        const amt = parseFloat(document.getElementById('inpFrom').value);
+        const currentFromBal = isGoldToUsdt ? balanceGold : balanceUsdt;
+
         if(!amt || amt <= 0) {
             alert("Please enter a valid amount.");
             return;
         }
-        alert("Swapping " + amt + " assets...");
+
+        if(amt > currentFromBal) {
+            alert("Insufficient balance!");
+            return;
+        }
+
+        // এখানে আপনি ভবিষ্যতে ফায়ারবেসে ব্যালেন্স ট্রানজ্যাকশন করার কোড লিখবেন
+        alert(`Request Sent! Swapping ${amt} ${isGoldToUsdt ? 'GOLD' : 'USDT'}...`);
     }
 
 </script>
