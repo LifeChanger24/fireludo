@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menu - FireLudo Pro</title>
+    <style>
+        /* --- অরিজিনাল RESET & VARIABLES (১০০% অপরিবর্তিত) --- */
+        :root {
+            --bg-body: #0e0f14;
+            --bg-card: #1c1d26;
+            --text-white: #ffffff;
+            --text-muted: #8b8c99;
+            --nav-bg: #181922;
+            --accent-blue: #3b82f6; 
+            --green: #4ADE80;
+            --red: #FF4757;
+            --border: rgba(255, 255, 255, 0.05);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: var(--bg-body); color: var(--text-white); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        .app-container { 
+            width: 100%; max-width: 420px; 
+            background-color: var(--bg-body); 
+            position: relative; 
+            display: flex; flex-direction: column;
+            padding-bottom: 110px; 
+        }
+
+        /* --- HEADER --- */
+        .header { padding: 15px 20px 5px; text-align: center; }
+        .header h2 { font-size: 16px; font-weight: 800; letter-spacing: 0.5px; color: var(--text-muted); }
+
+        /* --- PROFILE CARD --- */
+        .profile-card {
+            margin: 10px 20px; padding: 12px 15px; 
+            background: linear-gradient(135deg, #1c1d26 0%, #11141b 100%);
+            border-radius: 15px; border: 1px solid var(--border); 
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .p-info { display: flex; align-items: center; gap: 12px; }
+        .p-avatar { width: 45px; height: 45px; border-radius: 50%; border: 1.5px solid var(--accent-blue); background: #252930; overflow: hidden; }
+        .p-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .p-text h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+        .p-text p { font-size: 10px; color: var(--text-muted); }
+        .p-edit-btn { width: 30px; height: 30px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; cursor: pointer; border: 1px solid #333; font-size: 12px; }
+
+        /* --- MENU LIST --- */
+        .menu-section { padding: 0 20px; margin-bottom: 12px; }
+        .section-label { font-size: 9px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+        .menu-group { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+        
+        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #252930; cursor: pointer; }
+        .menu-item:last-child { border-bottom: none; }
+        
+        .item-left { display: flex; align-items: center; gap: 10px; }
+        .item-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 14px; }
+        .item-text { font-size: 13px; font-weight: 600; color: #cbd5e1; }
+        .item-arrow { color: #444; font-size: 10px; }
+
+        /* Icon Colors */
+        .bg-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .bg-green { background: rgba(74, 222, 128, 0.1); color: #4ade80; }
+        .bg-orange { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+
+        .toggle-btn { width: 30px; height: 16px; background: #333; border-radius: 20px; position: relative; }
+        .toggle-btn::after { content: ''; position: absolute; right: 2px; top: 2px; width: 12px; height: 12px; background: var(--green); border-radius: 50%; }
+
+        /* --- LOGOUT BUTTON --- */
+        .logout-container { padding: 0 20px; margin-top: 5px; }
+        .btn-logout { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255, 71, 87, 0.15); background: rgba(255, 71, 87, 0.05); color: var(--red); font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .version-text { text-align: center; font-size: 9px; color: #333; margin-top: 8px; }
+
+        /* --- FIXED BOTTOM NAV ( মাপ এবং এলাইনমেন্ট ঠিক করা হয়েছে ) --- */
+        .bottom-nav-container { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 92%; 
+            max-width: 400px; 
+            background: #181922; 
+            border-radius: 25px; 
+            padding: 0 10px; 
+            height: 70px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #2d2e3d; 
+            z-index: 1000; 
+            box-sizing: border-box;
+        }
+        .nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            color: #585966; 
+            font-size: 10px; 
+            gap: 4px; 
+            cursor: pointer; 
+            width: 20%; 
+            text-decoration: none;
+            transition: all 0.3s; 
+            flex-shrink: 0;
+        }
+        .nav-item.active { color: white; }
+        .nav-item.active svg { stroke: white; }
+        
+        .wallet-btn-wrap {
+            width: 20%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .wallet-btn { 
+            background: var(--accent-blue); 
+            width: 54px; 
+            height: 54px; 
+            border-radius: 18px; 
+            margin-top: -30px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            color: white; 
+            border: 5px solid var(--bg-body); 
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); 
+            flex-shrink: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h2>Menu</h2>
+    </div>
+
+    <div class="profile-card">
+        <div class="p-info">
+            <div class="p-avatar">
+                <img src="https://i.pravatar.cc/150?img=3" alt="Avatar">
+            </div>
+            <div class="p-text">
+                <h3>KIBREIT</h3>
+                <p>ID: 8839201</p>
+            </div>
+        </div>
+        <div class="p-edit-btn" onclick="location.href='profile.html'">✎</div>
+    </div>
+
+    <div class="menu-section">
+        <span class="section-label">General Settings</span>
+        <div class="menu-group">
+            <div class="menu-item">
+                <div class="item-left"><div class="item-icon bg-blue">🔊</div><div class="item-text">Sound Effects</div></div>
+                <div class="toggle-btn"></div>
+            </div>
+            <div class="menu-item">
+                <div class="item-left"><div class="item-icon bg-orange">🎵</div><div class="item-text">Music</div></div>
+                <div class="toggle-btn"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="menu-section">
+        <span class="section-label">Support & Help</span>
+        <div class="menu-group">
+            <div class="menu-item" onclick="location.href='support.html'">
+                <div class="item-left"><div class="item-icon bg-blue">💬</div><div class="item-text">Help Center</div></div>
+                <span class="item-arrow">❯</span>
+            </div>
+            <div class="menu-item" onclick="window.open('https://t.me/FireLudo', '_blank')">
+                <div class="item-left"><div class="item-icon bg-blue" style="color:#229ED9;">✈</div><div class="item-text">Join Telegram</div></div>
+                <span class="item-arrow">❯</span>
+            </div>
+            <div class="menu-item" onclick="location.href='terms.html'">
+                <div class="item-left"><div class="item-icon bg-orange">📄</div><div class="item-text">Terms & Privacy</div></div>
+                <span class="item-arrow">❯</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="logout-container">
+        <button class="btn-logout" onclick="location.href='index.html'">
+            <span>🚪</span> Log Out
+        </button>
+        <p class="version-text">Version 1.0.5</p>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav-container">
+        <a href="home.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <span>Home</span>
+        </a>
+        <a href="game.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01M21 7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7Z"></path></svg>
+            <span>Game</span>
+        </a>
+        <div class="wallet-btn-wrap">
+            <a href="wallet.html" class="wallet-btn">
+                <svg style="width:28px;height:28px;fill:none;stroke:white;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path></svg>
+            </a>
+        </div>
+        <a href="chat.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Chat</span>
+        </a>
+        <a href="menu.html" class="nav-item active">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <span>Menu</span>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

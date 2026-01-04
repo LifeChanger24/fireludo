@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Leaderboard - FireLudo Pro</title>
+    <style>
+        /* --- অরিজিনাল RESET & VARIABLES --- */
+        :root {
+            --bg-body: #0B0E14; --gold: #FFD700; --cyan: #00E0FF; --pink: #FF007F; --green: #00FF94;
+            --accent-blue: #3b82f6; --text-muted: #8b8c99; --bg-list: #161923;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #000; color: white; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .app-container { width: 100%; max-width: 420px; background-color: var(--bg-body); position: relative; display: flex; flex-direction: column; }
+
+        /* HEADER */
+        .header { display: flex; align-items: center; padding: 15px 20px; background: rgba(11, 14, 20, 0.95); gap: 15px; position: sticky; top: 0; z-index: 100; }
+        .back-btn { font-size: 24px; cursor: pointer; color: white; background: rgba(255,255,255,0.1); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* TOP TABS */
+        .top-tabs { display: flex; margin: 10px 20px 15px; background: #1a1d23; padding: 5px; border-radius: 15px; border: 1px solid #2d323e; gap: 5px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-muted); font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.3s; border-radius: 10px; }
+        .tab-btn.active { background: var(--accent-blue); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+
+        /* CONTENT */
+        .scroll-content { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+        .scroll-content::-webkit-scrollbar { display: none; }
+
+        /* TIMER BOX */
+        .timer-box { background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%); border: 2px solid #FFD700; padding: 10px 25px; border-radius: 20px; text-align: center; box-shadow: 0 0 20px rgba(255, 75, 43, 0.5); display: flex; align-items: center; gap: 12px; margin: 0 20px 20px; }
+        .timer-digits { font-family: monospace; font-size: 17px; font-weight: 900; }
+
+        /* PODIUM */
+        .podium-section { display: flex; justify-content: center; align-items: flex-end; padding: 10px 0 40px; gap: 10px; position: relative; }
+        .podium-item { display: flex; flex-direction: column; align-items: center; width: 30%; text-align: center; position: relative; }
+        .avatar-box { border-radius: 50%; background-size: cover; border: 3px solid #333; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .rank-1 .avatar-box { width: 85px; height: 85px; border-color: var(--gold); background-image: url('https://i.pravatar.cc/150?img=11'); }
+        .rank-2 .avatar-box { width: 70px; height: 70px; border-color: var(--cyan); background-image: url('https://i.pravatar.cc/150?img=12'); }
+        .rank-3 .avatar-box { width: 70px; height: 70px; border-color: var(--pink); background-image: url('https://i.pravatar.cc/150?img=3'); }
+        
+        /* এনিমেশন কাউন্টার স্টাইল */
+        .live-counter { background: #111; border: 1px solid #333; padding: 4px 8px; border-radius: 6px; font-family: monospace; font-weight: 800; font-size: 13px; color: var(--green); margin-top: 15px; min-width: 80px; transition: all 0.4s ease-in-out; }
+        .updated { background-color: var(--green); color: black !important; transform: scale(1.1); box-shadow: 0 0 15px var(--green); }
+
+        /* RANK LIST */
+        .ranking-sheet { background: var(--bg-list); border-radius: 40px 40px 0 0; padding: 30px 20px 50px; border-top: 1px solid rgba(255,255,255,0.1); box-shadow: 0 -10px 50px rgba(0,0,0,0.5); }
+        .list-row { display: flex; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.02); }
+        .row-rank { width: 30px; font-weight: 800; color: #64748b; }
+        .row-user { flex: 1; display: flex; align-items: center; gap: 12px; }
+        .row-avatar { width: 38px; height: 38px; border-radius: 50%; background: #333; background-size: cover; border: 1px solid #444; }
+        .row-name { font-size: 13px; color: white; font-weight: 600; }
+        .list-counter { font-size: 12px; color: var(--gold); font-weight: 800; min-width: 70px; text-align: right; transition: all 0.4s; }
+        .list-counter.updated { color: black !important; padding: 2px 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="back-btn" onclick="location.href='home.html'">←</div>
+        <h2>Leaderboard</h2>
+    </div>
+
+    <!-- Top Tabs -->
+    <div class="top-tabs">
+        <button class="tab-btn" onclick="location.href='bonus.html'">Bonus</button>
+        <button class="tab-btn active">Rank</button>
+    </div>
+
+    <div class="scroll-content">
+        <!-- Timer Box -->
+        <div class="timer-box">
+            <span style="font-size:24px;">⏳</span>
+            <div style="text-align:left;">
+                <div style="font-size:9px; font-weight:bold; color:#FFE5B4;">SEASON ENDS IN</div>
+                <div class="timer-digits" id="countdown">29d : 11h : 59m : 49s</div>
+            </div>
+        </div>
+
+        <!-- Podium (1st, 2nd, 3rd) -->
+        <div class="podium-section">
+            <div class="podium-item rank-2">
+                <div class="avatar-box"></div>
+                <div style="color:white; font-size:12px; font-weight:700; margin-top:10px;">Sarah</div>
+                <div class="live-counter" id="p2" data-val="3250">$3,250</div>
+            </div>
+            <div class="podium-item rank-1">
+                <span style="position:absolute; top:-35px; font-size:35px;">👑</span>
+                <div class="avatar-box"></div>
+                <div style="color:white; font-size:13px; font-weight:700; margin-top:15px;">John Smith</div>
+                <div class="live-counter" id="p1" data-val="5116" style="font-size:15px;">$5,116</div>
+            </div>
+            <div class="podium-item rank-3">
+                <div class="avatar-box"></div>
+                <div style="color:white; font-size:12px; font-weight:700; margin-top:10px;">Paul</div>
+                <div class="live-counter" id="p3" data-val="2157">$2,157</div>
+            </div>
+        </div>
+
+        <!-- Full List (4 to 9) -->
+        <div class="ranking-sheet">
+            <div class="list-row"><div class="row-rank">4</div><div class="row-user"><div class="row-avatar" style="background-image:url('https://i.pravatar.cc/150?img=5')"></div><span class="row-name">Bhavna M.</span></div><span class="list-counter" id="p4" data-val="1026">$1,026</span></div>
+            <div class="list-row"><div class="row-rank">5</div><div class="row-user"><div class="row-avatar" style="background-image:url('https://i.pravatar.cc/150?img=8')"></div><span class="row-name">Robin H.</span></div><span class="list-counter" id="p5" data-val="955">$955</span></div>
+            <div class="list-row"><div class="row-rank">6</div><div class="row-user"><div class="row-avatar" style="background-image:url('https://i.pravatar.cc/150?img=12')"></div><span class="row-name">Taran K.</span></div><span class="list-counter" id="p6" data-val="843">$843</span></div>
+            <div class="list-row"><div class="row-rank">7</div><div class="row-user"><div class="row-avatar" style="background-image:url('https://i.pravatar.cc/150?img=33')"></div><span class="row-name">Mike S.</span></div><span class="list-counter" id="p7" data-val="753">$753</span></div>
+            <div class="list-row"><div class="row-rank">8</div><div class="row-user"><div class="row-avatar" style="background-image:url('https://i.pravatar.cc/150?img=59')"></div><span class="row-name">Andrew</span></div><span class="list-counter" id="p8" data-val="610">$610</span></div>
+            <div class="list-row"><div class="row-rank">9</div><div class="row-user"><div class="row-avatar" style="background-image:url('https://i.pravatar.cc/150?img=60')"></div><span class="row-name">William</span></div><span class="list-counter" id="p9" data-val="505">$505</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // একযোগে সব ইউজারের কমিশন বন্টন এনিমেশন
+    const playerIds = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'];
+    // র‍্যাঙ্ক অনুযায়ী বন্টন অনুপাত (১ম জন বেশি পাবে, শেষ জন কম)
+    const weightage = [0.30, 0.20, 0.15, 0.10, 0.08, 0.06, 0.05, 0.03, 0.03]; 
+
+    function distributeTeamCommission() {
+        // ধরুন মোট ১০ ডলার কমিশন জেনারেট হয়েছে
+        let totalCommission = Math.floor(Math.random() * 10) + 5; 
+
+        playerIds.forEach((id, index) => {
+            let el = document.getElementById(id);
+            if(el) {
+                let share = Math.ceil(totalCommission * weightage[index]);
+                if (share < 1) share = 1;
+
+                let currentVal = parseInt(el.getAttribute('data-val'));
+                let newVal = currentVal + share;
+                
+                el.setAttribute('data-val', newVal);
+                el.innerText = '$' + newVal.toLocaleString();
+                
+                // একযোগে সব কার্ডে সবুজ ফ্লাশ এনিমেশন
+                el.classList.add('updated');
+                setTimeout(() => el.classList.remove('updated'), 800);
+            }
+        });
+    }
+
+    // প্রতি ৫ সেকেন্ড পর পর সবার ব্যালেন্স একসাথে বাড়বে
+    setInterval(distributeTeamCommission, 5000);
+
+    // কাউন্টডাউন টাইমার
+    var countDownDate = new Date().getTime() + (29 * 24 * 60 * 60 * 1000);
+    setInterval(function() {
+        var now = new Date().getTime();
+        var distance = countDownDate - now;
+        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        document.getElementById("countdown").innerHTML = days + "d : " + hours + "h : " + minutes + "m : " + seconds + "s";
+    }, 1000);
+</script>
+
+</body>
+</html>

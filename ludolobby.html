@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ludo USDT Final Pro</title>
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-body: #0B0E14; 
+            --nav-bg: rgba(22, 24, 33, 0.98);
+            
+            --card-bg: #151921;
+            --card-border: #2A303C;
+            --btn-green: #22c55e;
+            --text-gold: #fbbf24;
+            --text-entry: #ffffff;
+            --text-sub: #9ca3af;
+            
+            --ludo-blue: #3b82f6;
+            --usdt-green: #26a17b;
+            --red-danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: #000;
+            display: flex; justify-content: center; min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%; max-width: 420px;
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(38, 161, 123, 0.1) 0%, transparent 60%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            position: relative; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            position: relative; z-index: 10;
+        }
+        .back-btn { 
+            color: white; font-size: 24px; cursor: pointer; 
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+        }
+        .header-title { font-size: 18px; font-weight: 800; color: white; letter-spacing: 0.5px; }
+        .balance-chip {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 15px; border-radius: 20px; color: var(--text-gold); font-weight: 800; font-size: 13px;
+        }
+
+        /* --- TABS --- */
+        .tab-wrapper {
+            display: flex; margin: 10px 15px;
+            background: #1e2029; padding: 5px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1); gap: 5px;
+            flex-shrink: 0;
+        }
+        .tab-btn {
+            flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-sub);
+            font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 12px;
+        }
+        .tab-btn.active {
+            background: var(--ludo-blue); color: white; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        /* --- ACTIVE ROOM BAR --- */
+        .active-room-bar {
+            margin: 5px 15px 15px 15px;
+            background: linear-gradient(135deg, #1e2029 0%, #252a35 100%);
+            border: 1px solid var(--ludo-blue);
+            padding: 12px 15px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+            display: none;
+            animation: slideDown 0.3s ease;
+            flex-shrink: 0;
+        }
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .arb-left { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; }
+        .arb-icon { 
+            width: 35px; height: 35px; background: rgba(59, 130, 246, 0.2); 
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+            font-size: 18px; color: white;
+        }
+        .arb-info-title { color: white; font-size: 13px; font-weight: bold; }
+        .arb-info-sub { color: #aaa; font-size: 10px; }
+
+        .arb-actions { display: flex; gap: 10px; align-items: center; }
+        
+        .btn-arb-open {
+            background: var(--ludo-blue); color: white; border: none;
+            padding: 8px 20px; border-radius: 20px; font-weight: 800; font-size: 11px;
+            cursor: pointer; letter-spacing: 0.5px;
+        }
+        .btn-arb-cancel {
+            background: rgba(239, 68, 68, 0.15); color: var(--red-danger); 
+            border: 1px solid var(--red-danger); width: 30px; height: 30px; 
+            border-radius: 50%; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* --- CONTENT AREA --- */
+        .lobby-content {
+            flex: 1; overflow-y: auto; padding: 0 15px 20px 15px;
+        }
+        .lobby-content::-webkit-scrollbar { display: none; }
+
+        .vertical-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+
+        /* --- GAME CARD --- */
+        .game-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); position: relative;
+        }
+        .game-card:active { transform: scale(0.98); }
+
+        .gc-left { display: flex; flex-direction: column; gap: 2px; }
+        .gc-label { font-size: 10px; color: var(--text-sub); letter-spacing: 1px; font-weight: 600; }
+        .gc-amount { font-size: 20px; color: var(--text-entry); font-weight: 800; }
+        .gc-players { font-size: 11px; color: var(--btn-green); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+
+        .gc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        .gc-win-label { font-size: 11px; color: var(--text-gold); font-weight: 700; text-transform: uppercase; }
+        
+        .gc-play-btn {
+            background: var(--btn-green); color: #000; font-weight: 800; font-size: 13px;
+            padding: 8px 24px; border-radius: 8px; border: none; cursor: pointer;
+            box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+        }
+        .border-gold { border: 1px solid var(--text-gold); }
+
+        /* --- CREATE/JOIN BOXES --- */
+        .private-section { display: none; margin-top: 15px; }
+        
+        .action-box {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 20px; border-radius: 16px; margin-bottom: 20px;
+        }
+        .ab-title { color: white; font-weight: 700; margin-bottom: 15px; text-align: center; }
+
+        .amount-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .chip {
+            padding: 10px; background: rgba(255,255,255,0.05); color: #ccc;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            text-align: center; font-size: 12px; font-weight: bold; cursor: pointer;
+        }
+        .chip.selected { background: var(--btn-green); color: black; border-color: var(--btn-green); }
+
+        .btn-large {
+            width: 100%; padding: 14px; border-radius: 10px; border: none;
+            font-size: 14px; font-weight: 800; cursor: pointer;
+            background: var(--ludo-blue); color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .input-dark {
+            width: 100%; background: #0f1218; border: 1px solid #2A303C;
+            padding: 14px; border-radius: 10px; color: white; text-align: center;
+            font-size: 16px; font-weight: bold; margin-bottom: 15px; outline: none;
+        }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px); display: none;
+        }
+        .modal-card {
+            background: #1A1D26; width: 85%; max-width: 320px;
+            padding: 25px; border-radius: 20px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transform: scale(0.95); animation: popIn 0.2s forwards;
+        }
+        @keyframes popIn { to { transform: scale(1); } }
+
+        .pay-details {
+            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;
+            margin: 15px 0; text-align: left; border-left: 3px solid var(--text-gold);
+        }
+        .pd-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: #ccc; }
+        .pd-total { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; margin-top: 5px; font-weight: bold; color: white; }
+
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-m { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-gray { background: rgba(255,255,255,0.1); color: #ccc; }
+        .btn-confirm { background: var(--ludo-blue); color: white; }
+
+        /* Timer */
+        .timer-svg { width: 100px; height: 100px; transform: rotate(-90deg); margin: 0 auto; display: block;}
+        .timer-circle-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 6; }
+        .timer-circle-progress { fill: none; stroke: var(--ludo-blue); stroke-width: 6; stroke-dasharray: 283; stroke-dashoffset: 0; transition: 1s linear; }
+        
+        /* COPY BOX STYLE */
+        .copy-box {
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px;
+            border: 1px dashed rgba(255,255,255,0.2); margin-bottom: 20px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .copy-box:active { background: rgba(0,0,0,0.6); border-color: var(--ludo-blue); }
+        .code-text { font-size: 32px; font-weight: 800; color: var(--ludo-blue); letter-spacing: 4px; }
+        .copy-icon { font-size: 20px; color: #aaa; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- HEADER - Back button linked to game.html -->
+    <div class="header">
+        <div class="back-btn" onclick="location.href='game.html'">&#8592;</div>
+        <div class="header-title">Ludo Classic</div>
+        <div class="balance-chip">1,561 USDT</div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-wrapper">
+        <button class="tab-btn active" onclick="switchTab('online')">Online</button>
+        <button class="tab-btn" onclick="switchTab('public')">Public</button>
+        <button class="tab-btn" onclick="switchTab('friend')">Friend</button>
+    </div>
+
+    <!-- ACTIVE ROOM BAR -->
+    <div class="active-room-bar" id="activeRoomBar">
+        <div class="arb-left" onclick="maximizeRoom()">
+            <div class="arb-icon">⏳</div>
+            <div>
+                <div class="arb-info-title">Room: 99321</div>
+                <div class="arb-info-sub">Waiting for players...</div>
+            </div>
+        </div>
+        <div class="arb-actions">
+            <button class="btn-arb-open" onclick="maximizeRoom()">OPEN</button>
+            <button class="btn-arb-cancel" onclick="cancelRoom()">✕</button>
+        </div>
+    </div>
+
+    <div class="lobby-content">
+
+        <!-- 1. ONLINE LIST -->
+        <div id="online-tab">
+            <div class="vertical-list">
+                <div class="game-card"><div class="gc-left"><div class="gc-label">ENTRY</div><div class="gc-amount">0.50 USDT</div><div class="gc-players">● 120 Playing</div></div><div class="gc-right"><div class="gc-win-label">WIN: 0.90</div><button class="gc-play-btn" onclick="initiateTransaction(0.5, 'Online Match', startOnlineMatch)">PLAY</button></div></div>
+                <div class="game-card"><div class="gc-left"><div class="gc-label">ENTRY</div><div class="gc-amount">2.00 USDT</div><div class="gc-players">● 450 Playing</div></div><div class="gc-right"><div class="gc-win-label">WIN: 3.60</div><button class="gc-play-btn" onclick="initiateTransaction(2.0, 'Online Match', startOnlineMatch)">PLAY</button></div></div>
+                <div class="game-card"><div class="gc-left"><div class="gc-label">ENTRY</div><div class="gc-amount">5.00 USDT</div><div class="gc-players">● 85 Playing</div></div><div class="gc-right"><div class="gc-win-label">WIN: 9.00</div><button class="gc-play-btn" onclick="initiateTransaction(5.0, 'Online Match', startOnlineMatch)">PLAY</button></div></div>
+                <div class="game-card"><div class="gc-left"><div class="gc-label">ENTRY</div><div class="gc-amount">10.00 USDT</div><div class="gc-players">● 42 Playing</div></div><div class="gc-right"><div class="gc-win-label">WIN: 18.00</div><button class="gc-play-btn" onclick="initiateTransaction(10.0, 'Online Match', startOnlineMatch)">PLAY</button></div></div>
+                <div class="game-card"><div class="gc-left"><div class="gc-label">ENTRY</div><div class="gc-amount">20.00 USDT</div><div class="gc-players">● 15 Playing</div></div><div class="gc-right"><div class="gc-win-label">WIN: 36.00</div><button class="gc-play-btn" onclick="initiateTransaction(20.0, 'Online Match', startOnlineMatch)">PLAY</button></div></div>
+                <div class="game-card border-gold"><div class="gc-left"><div class="gc-label">ENTRY</div><div class="gc-amount" style="color:var(--text-gold)">50.00 USDT</div><div class="gc-players">● 8 Playing</div></div><div class="gc-right"><div class="gc-win-label">WIN: 90.00</div><button class="gc-play-btn" style="background:var(--text-gold); color:black;" onclick="initiateTransaction(50.0, 'Online Match', startOnlineMatch)">PLAY</button></div></div>
+            </div>
+        </div>
+
+        <!-- 2. PUBLIC TAB -->
+        <div id="public-tab" class="private-section">
+            <div class="action-box">
+                <div class="ab-title">Post a Challenge</div>
+                <div class="amount-grid">
+                    <div class="chip selected" onclick="selectAmt(this, 1)">1</div>
+                    <div class="chip" onclick="selectAmt(this, 2)">2</div>
+                    <div class="chip" onclick="selectAmt(this, 5)">5</div>
+                    <div class="chip" onclick="selectAmt(this, 10)">10</div>
+                </div>
+                <button class="btn-large" onclick="confirmCreation('Public')">Create Challenge</button>
+            </div>
+            
+            <div class="vertical-list">
+                <div class="game-card">
+                    <div class="gc-left"><div class="gc-label">VS PLAYER</div><div class="gc-amount" style="font-size:16px;">Killer_Boy</div><div class="gc-players">Bet: 2.0 USDT</div></div>
+                    <div class="gc-right"><div class="gc-win-label">WIN: 3.6</div><button class="gc-play-btn" style="background:white; color:black;" onclick="initiateTransaction(2.0, 'Join Challenge', () => alert('Joining Game...'))">JOIN</button></div>
+                </div>
+                <div class="game-card">
+                    <div class="gc-left"><div class="gc-label">VS PLAYER</div><div class="gc-amount" style="font-size:16px;">Ludo_Pro</div><div class="gc-players">Bet: 5.0 USDT</div></div>
+                    <div class="gc-right"><div class="gc-win-label">WIN: 9.0</div><button class="gc-play-btn" style="background:white; color:black;" onclick="initiateTransaction(5.0, 'Join Challenge', () => alert('Joining Game...'))">JOIN</button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. FRIEND TAB -->
+        <div id="friend-tab" class="private-section">
+            <div class="action-box">
+                <div class="ab-title">Join Room</div>
+                <input type="number" class="input-dark" id="joinCode" placeholder="Enter Room Code">
+                <button class="btn-large" style="background:#333;" onclick="checkAndJoin()">Check Room</button>
+            </div>
+
+            <div class="action-box">
+                <div class="ab-title">Create Private Room</div>
+                <div class="amount-grid">
+                    <div class="chip selected" onclick="selectAmt(this, 0.5)">0.5</div>
+                    <div class="chip" onclick="selectAmt(this, 1)">1</div>
+                    <div class="chip" onclick="selectAmt(this, 5)">5</div>
+                    <div class="chip" onclick="selectAmt(this, 10)">10</div>
+                    <div class="chip" onclick="selectAmt(this, 20)">20</div>
+                    <div class="chip" onclick="selectAmt(this, 50)">50</div>
+                    <div class="chip" onclick="selectAmt(this, 100)">100</div>
+                    <div class="chip" onclick="selectAmt(this, 200)">200</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px; padding:0 10px;">
+                    <span style="color:#aaa; font-size:12px;">Winning Amount:</span>
+                    <span id="winDisplay" style="color:var(--btn-green); font-weight:bold;">0.9 USDT</span>
+                </div>
+                <button class="btn-large" onclick="confirmCreation('Private')">Create Room</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- === CONFIRMATION MODAL === -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-card">
+            <h3 style="color:white; margin-bottom:5px;">Confirm Payment</h3>
+            <p style="color:#aaa; font-size:12px;">You are creating a <span id="roomTypeLabel">Private</span> Room</p>
+            
+            <div class="pay-details">
+                <div class="pd-row"><span>Entry Fee:</span> <span id="confEntry">0.5 USDT</span></div>
+                <div class="pd-row"><span>Platform Fee (0%):</span> <span>0.0 USDT</span></div>
+                <div class="pd-row pd-total"><span>Deducted Amount:</span> <span id="confDeduct">0.5 USDT</span></div>
+            </div>
+            
+            <p style="color:var(--text-gold); font-size:11px;">⚠️ Amount will be deducted from your wallet immediately.</p>
+
+            <div class="modal-btns">
+                <button class="btn-m btn-gray" onclick="closeModal('confirmModal')">Cancel</button>
+                <button class="btn-m btn-confirm" onclick="confirmPayment()">Confirm & Pay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === WAITING ROOM MODAL (WITH COPY BUTTON) === -->
+    <div class="modal-overlay" id="waitingModal">
+        <div class="modal-card">
+            <h3 style="color:white; margin-bottom:5px;">Room Created</h3>
+            <p style="color:#aaa; font-size:12px; margin-bottom:20px;">Tap code to copy & share with friend</p>
+            
+            <div class="copy-box" onclick="copyToClipboard()">
+                <span class="code-text" id="roomCode">99321</span>
+                <span class="copy-icon">📋</span>
+            </div>
+            <div id="copyToast" style="color:var(--btn-green); font-size:12px; height:15px; margin-bottom:15px;"></div>
+
+            <p style="color:var(--ludo-blue); font-size:12px; margin-bottom:20px;">Waiting for players...</p>
+
+            <div class="modal-btns">
+                <button class="btn-m btn-gray" onclick="minimizeRoom()">⬇ Minimize</button>
+                <button class="btn-m" style="background:rgba(239,68,68,0.2); color:var(--red-danger);" onclick="cancelRoom()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === ONLINE SEARCH MODAL === -->
+    <div class="modal-overlay" id="searchModal">
+        <div class="modal-card">
+            <h3 style="color:white;">Searching...</h3>
+            <div class="timer-circle-container" style="position: relative; width: 100px; height: 100px; margin: 20px auto;">
+                <svg class="timer-svg">
+                    <circle class="timer-circle-bg" cx="50" cy="50" r="40"></circle>
+                    <circle class="timer-circle-progress" id="timerProgress" cx="50" cy="50" r="40"></circle>
+                </svg>
+                <div class="timer-text" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:24px; color:white; font-weight:bold;" id="timerText">30</div>
+            </div>
+            <button class="btn-m btn-gray" style="width:100%" onclick="closeModal('searchModal')">Cancel</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let currentAmount = 0.5;
+    let pendingAction = null;
+
+    function switchTab(tab) {
+        // Updated logic to match provided button ids/classes if needed
+        document.getElementById('online-tab').style.display = (tab === 'online') ? 'block' : 'none';
+        document.getElementById('public-tab').style.display = (tab === 'public') ? 'block' : 'none';
+        document.getElementById('friend-tab').style.display = (tab === 'friend') ? 'block' : 'none';
+        
+        let btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
+        if(tab === 'online') btns[0].classList.add('active');
+        if(tab === 'public') btns[1].classList.add('active');
+        if(tab === 'friend') btns[2].classList.add('active');
+    }
+
+    function selectAmt(el, amount) {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        currentAmount = amount;
+        
+        let win = (amount * 1.8).toFixed(1).replace(/\.0$/, '');
+        const disp = document.getElementById('winDisplay');
+        if(disp) disp.innerText = win + " USDT";
+    }
+
+    function copyToClipboard() {
+        const code = document.getElementById('roomCode').innerText;
+        const el = document.createElement('textarea');
+        el.value = code;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        const toast = document.getElementById('copyToast');
+        toast.innerText = "Code Copied!";
+        setTimeout(() => { toast.innerText = ""; }, 2000);
+    }
+
+    function initiateTransaction(amount, type, callback) {
+        document.getElementById('roomTypeLabel').innerText = type;
+        document.getElementById('confEntry').innerText = amount + " USDT";
+        document.getElementById('confDeduct').innerText = amount + " USDT";
+        
+        if (type === 'Online Match') {
+            pendingAction = function() { callback(amount); };
+        } else {
+            pendingAction = callback;
+        }
+        showModal('confirmModal');
+    }
+
+    function confirmPayment() {
+        closeModal('confirmModal');
+        if (pendingAction) pendingAction();
+    }
+
+    function confirmCreation(type) {
+        initiateTransaction(currentAmount, type, proceedToWait);
+    }
+
+    function proceedToWait() {
+        setTimeout(() => { showModal('waitingModal'); }, 300);
+    }
+
+    function checkAndJoin() {
+        const code = document.getElementById('joinCode').value;
+        if(code.length > 3) {
+            initiateTransaction(5.0, 'Join Room ' + code, () => alert("Joining..."));
+        } else {
+            alert("Please enter a valid code");
+        }
+    }
+
+    function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    
+    function minimizeRoom() { closeModal('waitingModal'); document.getElementById('activeRoomBar').style.display = 'flex'; }
+    function maximizeRoom() { document.getElementById('activeRoomBar').style.display = 'none'; showModal('waitingModal'); }
+    function cancelRoom() { closeModal('waitingModal'); document.getElementById('activeRoomBar').style.display = 'none'; }
+
+    function startOnlineMatch(amt) {
+        showModal('searchModal');
+        let timeLeft = 30;
+        const prog = document.getElementById('timerProgress');
+        const txt = document.getElementById('timerText');
+        prog.style.strokeDashoffset = 0;
+        
+        let interval = setInterval(() => {
+            timeLeft--;
+            if(txt) txt.innerText = timeLeft;
+            if(prog) prog.style.strokeDashoffset = 283 - (timeLeft/30)*283;
+            if(timeLeft<=0) { clearInterval(interval); closeModal('searchModal'); alert("Game Starting..."); }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>

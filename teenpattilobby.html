@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teen Patti Pro (Clean)</title>
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-body: #0B0E14; 
+            --nav-bg: rgba(20, 10, 5, 0.98);
+            
+            --card-bg: #1A120B;
+            --card-border: #3C2A21;
+            
+            --tp-gold: #FFD700;
+            --tp-red: #E50914;
+            --tp-green: #22c55e;
+            --text-white: #ffffff;
+            --text-sub: #b3a59f;
+            
+            --grad-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            --grad-red: linear-gradient(135deg, #E50914 0%, #B20710 100%);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: #000;
+            display: flex; justify-content: center; min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%; max-width: 420px;
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.1) 0%, transparent 60%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            position: relative; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            position: relative; z-index: 10;
+        }
+        .back-btn { 
+            color: var(--tp-gold); font-size: 24px; cursor: pointer; 
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,215,0,0.1); border-radius: 50%;
+        }
+        .header-title { font-size: 18px; font-weight: 800; color: white; letter-spacing: 0.5px; }
+        .balance-chip {
+            background: linear-gradient(90deg, #2e2008, #1f1505); 
+            border: 1px solid var(--tp-gold);
+            padding: 6px 15px; border-radius: 20px; color: var(--tp-gold); font-weight: 800; font-size: 13px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .balance-deducted { background: rgba(229, 9, 20, 0.2); border-color: var(--tp-red); color: white; transform: scale(1.1); }
+
+        /* --- TABS --- */
+        .tab-wrapper {
+            display: flex; margin: 10px 15px;
+            background: #160e08; padding: 5px; border-radius: 12px;
+            border: 1px solid rgba(255,215,0,0.15); gap: 5px;
+            flex-shrink: 0;
+        }
+        .tab-btn {
+            flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-sub);
+            font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 12px;
+        }
+        .tab-btn.active {
+            background: var(--tp-gold); color: black; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+        }
+
+        /* --- ACTIVE ROOM BAR --- */
+        .active-room-bar {
+            margin: 5px 15px 15px 15px;
+            background: linear-gradient(135deg, #1A120B 0%, #2C1E14 100%);
+            border: 1px solid var(--tp-gold);
+            padding: 12px 15px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.15);
+            display: none; animation: slideDown 0.3s ease; flex-shrink: 0;
+        }
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .arb-left { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; }
+        .arb-icon { 
+            width: 35px; height: 35px; background: rgba(255, 215, 0, 0.2); 
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+            font-size: 18px; color: var(--tp-gold);
+        }
+        .arb-info-title { color: white; font-size: 13px; font-weight: bold; }
+        .arb-info-sub { color: #aaa; font-size: 10px; }
+
+        .arb-actions { display: flex; gap: 10px; align-items: center; }
+        .btn-arb-open {
+            background: var(--tp-gold); color: black; border: none;
+            padding: 8px 20px; border-radius: 20px; font-weight: 800; font-size: 11px; cursor: pointer;
+        }
+        .btn-arb-cancel {
+            background: rgba(229, 9, 20, 0.2); color: var(--tp-red); 
+            border: 1px solid var(--tp-red); width: 30px; height: 30px; 
+            border-radius: 50%; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* --- CONTENT AREA --- */
+        .lobby-content {
+            flex: 1; overflow-y: auto; padding: 0 15px 20px 15px;
+        }
+        .lobby-content::-webkit-scrollbar { display: none; }
+
+        .vertical-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+
+        /* --- GAME CARD --- */
+        .game-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--tp-gold);
+            border-radius: 16px; padding: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); position: relative;
+        }
+        .game-card:active { transform: scale(0.98); }
+
+        .gc-left { display: flex; flex-direction: column; gap: 4px; }
+        .gc-label { font-size: 10px; color: var(--text-sub); letter-spacing: 1px; font-weight: 600; }
+        .gc-boot { font-size: 20px; color: white; font-weight: 800; display: flex; align-items: baseline; gap: 4px; }
+        .gc-unit { font-size: 12px; color: var(--tp-gold); }
+        .gc-min-buy { font-size: 11px; color: var(--tp-green); font-weight: 600; }
+
+        .gc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        .gc-seat-info { font-size: 10px; color: #aaa; text-align: right; }
+        .gc-players { font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
+        .dot { width: 6px; height: 6px; background: var(--tp-green); border-radius: 50%; display: inline-block; }
+        
+        .gc-play-btn {
+            background: var(--grad-gold); color: black; font-weight: 800; font-size: 13px;
+            padding: 8px 24px; border-radius: 8px; border: none; cursor: pointer;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+        }
+        .border-red { border-left-color: var(--tp-red); }
+        .border-red .gc-play-btn { background: var(--grad-red); color: white; box-shadow: 0 2px 10px rgba(229, 9, 20, 0.3); }
+
+        /* --- PRIVATE SECTION --- */
+        .private-section { display: none; margin-top: 15px; }
+        
+        .action-box {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 20px; border-radius: 16px; margin-bottom: 20px;
+        }
+        .ab-title { color: white; font-weight: 700; margin-bottom: 15px; text-align: center; }
+
+        .input-dark {
+            width: 100%; background: #0f0a06; border: 1px solid #3C2A21;
+            padding: 14px; border-radius: 10px; color: white; text-align: center;
+            font-size: 16px; font-weight: bold; margin-bottom: 15px; outline: none;
+        }
+        
+        .btn-large {
+            width: 100%; padding: 14px; border-radius: 10px; border: none;
+            font-size: 14px; font-weight: 800; cursor: pointer;
+            background: var(--grad-gold); color: black;
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.2);
+        }
+
+        /* Chips */
+        .chip { padding: 10px; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; text-align: center; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .chip.selected { background: var(--tp-gold); color: black; border-color: var(--tp-gold); }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px); display: none;
+        }
+        .modal-card {
+            background: #1A120B; width: 85%; max-width: 320px;
+            padding: 25px; border-radius: 20px; text-align: center;
+            border: 1px solid var(--tp-gold);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transform: scale(0.95); animation: popIn 0.2s forwards;
+        }
+        @keyframes popIn { to { transform: scale(1); } }
+
+        /* Slider */
+        .range-container { margin: 20px 0; }
+        .range-val-box { 
+            background: rgba(255,215,0,0.1); border: 1px solid var(--tp-gold);
+            padding: 12px; border-radius: 10px; margin-bottom: 15px;
+        }
+        .range-val { font-size: 24px; color: var(--tp-gold); font-weight: bold; }
+        
+        input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: var(--tp-gold); margin-top: -8px; cursor: pointer; box-shadow: 0 0 10px var(--tp-gold);
+        }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #444; border-radius: 5px; }
+
+        /* Payment Details */
+        .pay-details {
+            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;
+            margin: 15px 0; text-align: left; border-left: 3px solid var(--tp-gold);
+        }
+        .pd-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: #ccc; }
+        .pd-total { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; margin-top: 5px; font-weight: bold; color: white; }
+
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-m { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+        .btn-confirm { background: var(--grad-gold); color: black; }
+
+        /* Share/Copy Buttons */
+        .btn-share { background: #25D366; color: white; }
+        .btn-copy { background: var(--tp-gold); color: black; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- HEADER - Back button linked to game.html -->
+    <div class="header">
+        <div class="back-btn" onclick="location.href='game.html'">&#8592;</div>
+        <div class="header-title">Teen Patti Pro</div>
+        <div class="balance-chip" id="balanceDisplay" onclick="location.href='wallet.html'">1561.50 USDT</div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-wrapper">
+        <button class="tab-btn active" onclick="switchTab('classic')">Classic</button>
+        <button class="tab-btn" onclick="switchTab('private')">Private</button>
+    </div>
+
+    <!-- ACTIVE ROOM BAR -->
+    <div class="active-room-bar" id="activeRoomBar">
+        <div class="arb-left" onclick="maximizeRoom()">
+            <div class="arb-icon">⏳</div>
+            <div>
+                <div class="arb-info-title">Room: 77821</div>
+                <div class="arb-info-sub">Waiting for players...</div>
+            </div>
+        </div>
+        <div class="arb-actions">
+            <button class="btn-arb-open" onclick="maximizeRoom()">OPEN</button>
+            <button class="btn-arb-cancel" onclick="cancelRoom()">✕</button>
+        </div>
+    </div>
+
+    <div class="lobby-content">
+
+        <!-- 1. CLASSIC LIST (AUTO MATCH) -->
+        <div id="classic-tab">
+            <div class="vertical-list">
+                <!-- Boot 0.1 -->
+                <div class="game-card">
+                    <div class="gc-left">
+                        <div class="gc-label">BOOT AMOUNT</div>
+                        <div class="gc-boot">0.1 <span class="gc-unit">USDT</span></div>
+                        <div class="gc-min-buy">Min Buy-in: 1.0</div>
+                    </div>
+                    <div class="gc-right">
+                        <div class="gc-seat-info">👥 5 Seater (Auto)</div>
+                        <div class="gc-players"><span class="dot"></span> 42 Playing</div>
+                        <button class="gc-play-btn" onclick="openBuyInModal(0.1, 1.0, 10.0, 'Public')">PLAY</button>
+                    </div>
+                </div>
+
+                <!-- Boot 0.5 -->
+                <div class="game-card">
+                    <div class="gc-left">
+                        <div class="gc-label">BOOT AMOUNT</div>
+                        <div class="gc-boot">0.5 <span class="gc-unit">USDT</span></div>
+                        <div class="gc-min-buy">Min Buy-in: 5.0</div>
+                    </div>
+                    <div class="gc-right">
+                        <div class="gc-seat-info">👥 5 Seater (Auto)</div>
+                        <div class="gc-players"><span class="dot"></span> 18 Playing</div>
+                        <button class="gc-play-btn" onclick="openBuyInModal(0.5, 5.0, 50.0, 'Public')">PLAY</button>
+                    </div>
+                </div>
+
+                <!-- Boot 1.0 (Red) -->
+                <div class="game-card border-red">
+                    <div class="gc-left">
+                        <div class="gc-label">BOOT AMOUNT</div>
+                        <div class="gc-boot" style="color:var(--tp-red)">1.0 <span class="gc-unit">USDT</span></div>
+                        <div class="gc-min-buy">Min Buy-in: 10.0</div>
+                    </div>
+                    <div class="gc-right">
+                        <div class="gc-seat-info">👥 5 Seater (Auto)</div>
+                        <div class="gc-players"><span class="dot"></span> 5 Playing</div>
+                        <button class="gc-play-btn" style="background:var(--grad-red); color:white;" onclick="openBuyInModal(1.0, 10.0, 100.0, 'Public')">PLAY</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. PRIVATE TAB -->
+        <div id="private-tab" class="private-section">
+            <div class="action-box">
+                <div class="ab-title">Join Private Table</div>
+                <input type="number" class="input-dark" id="joinCode" placeholder="Enter Table Code">
+                <button class="btn-large" style="background:#333; color:white; box-shadow:none;" onclick="checkAndJoin()">Check Table</button>
+            </div>
+
+            <div class="action-box">
+                <div class="ab-title">Create Private Table</div>
+                <div style="font-size:12px; color:#aaa; margin-bottom:15px;">Select Boot Amount</div>
+                
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-bottom:15px;">
+                    <div class="chip selected" onclick="selectBoot(this, 0.1)">0.1</div>
+                    <div class="chip" onclick="selectBoot(this, 0.5)">0.5</div>
+                    <div class="chip" onclick="selectBoot(this, 1)">1</div>
+                    <div class="chip" onclick="selectBoot(this, 2)">2</div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between;">
+                    <span style="color:#aaa; font-size:12px;">Min Buy-in:</span>
+                    <span id="minBuyInDisp" style="color:var(--tp-gold); font-weight:bold;">1.0 USDT</span>
+                </div>
+
+                <button class="btn-large" onclick="createPrivateTable()">Create Table</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- === 1. BUY-IN SLIDER MODAL === -->
+    <div class="modal-overlay" id="buyInModal">
+        <div class="modal-card">
+            <h3 style="color:white; margin-bottom:5px;">Table Buy-in</h3>
+            <p style="color:#aaa; font-size:12px;">Select amount to bring to table</p>
+
+            <div class="range-container">
+                <div class="range-val-box">
+                    <span class="range-val" id="buyInDisplay">5.0</span> USDT
+                </div>
+                <input type="range" id="buyInSlider" min="1" max="10" step="0.5" oninput="updateSlider(this.value)">
+                <div style="display:flex; justify-content:space-between; color:#666; font-size:10px; margin-top:5px;">
+                    <span id="minLimit">Min: 1.0</span>
+                    <span id="maxLimit">Max: 10.0</span>
+                </div>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn-m btn-cancel" onclick="closeModal('buyInModal')">Cancel</button>
+                <button class="btn-m btn-confirm" onclick="proceedToPayment()">Sit & Play</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 2. PAYMENT CONFIRMATION MODAL === -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-card">
+            <h3 style="color:white; margin-bottom:5px;">Confirm Transfer</h3>
+            <p style="color:#aaa; font-size:12px;">Moving funds from Main Wallet to Table</p>
+            
+            <div class="pay-details">
+                <div class="pd-row"><span>Amount:</span> <span id="confAmount">5.0 USDT</span></div>
+                <div class="pd-row"><span>Fee (0%):</span> <span>0.0 USDT</span></div>
+                <div class="pd-row pd-total"><span>Total Deduct:</span> <span id="confTotal">5.0 USDT</span></div>
+            </div>
+            
+            <p style="color:var(--tp-red); font-size:11px;">⚠️ Amount will be locked on table.</p>
+
+            <div class="modal-btns">
+                <button class="btn-m btn-cancel" onclick="closeModal('confirmModal')">Back</button>
+                <button class="btn-m btn-confirm" onclick="confirmPayment()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 3. WAITING ROOM MODAL (PRIVATE) === -->
+    <div class="modal-overlay" id="waitingModal">
+        <div class="modal-card">
+            <h3 style="color:white; margin-bottom:5px;">Table Created</h3>
+            <p style="color:#aaa; font-size:12px; margin-bottom:15px;">Share code with friends</p>
+            
+            <!-- CODE -->
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:15px; border:1px dashed #555;">
+                <div style="font-size:32px; font-weight:800; color:var(--tp-gold); letter-spacing:5px;" id="roomCodeText">77821</div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="btn-m btn-share" onclick="shareRoom()">📤 Share</button>
+                <button class="btn-m btn-copy" onclick="copyCode()">📋 Copy</button>
+            </div>
+
+            <p style="color:var(--tp-gold); font-size:12px; margin-bottom:20px; animation:pulse 1.5s infinite;">Waiting for players...</p>
+
+            <div class="modal-btns">
+                <button class="btn-m btn-cancel" onclick="minimizeRoom()">⬇ Minimize</button>
+                <button class="btn-m" style="background:rgba(229,9,20,0.2); color:var(--tp-red);" onclick="cancelRoom()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- VARIABLES ---
+    let myBalance = 1561.50;
+    let selectedBuyIn = 0;
+    let currentBoot = 0.1;
+    let pendingAction = null; 
+
+    // --- TABS ---
+    function switchTab(tab) {
+        ['classic', 'private'].forEach((t, i) => {
+            document.getElementById(t + '-tab').style.display = (t === tab) ? 'block' : 'none';
+            document.querySelectorAll('.tab-btn')[i].classList.toggle('active', t === tab);
+        });
+    }
+
+    // --- LOGIC ---
+    function openBuyInModal(boot, min, max, type) {
+        pendingAction = type; 
+        const modal = document.getElementById('buyInModal');
+        const slider = document.getElementById('buyInSlider');
+        
+        slider.min = min;
+        slider.max = max;
+        slider.value = min;
+        
+        document.getElementById('minLimit').innerText = "Min: " + min;
+        document.getElementById('maxLimit').innerText = "Max: " + max;
+        updateSlider(min);
+
+        modal.style.display = 'flex';
+    }
+
+    function updateSlider(val) {
+        selectedBuyIn = parseFloat(val);
+        document.getElementById('buyInDisplay').innerText = selectedBuyIn.toFixed(1);
+    }
+
+    function proceedToPayment() {
+        closeModal('buyInModal');
+        document.getElementById('confAmount').innerText = selectedBuyIn + " USDT";
+        document.getElementById('confTotal').innerText = selectedBuyIn + " USDT";
+        showModal('confirmModal');
+    }
+
+    function confirmPayment() {
+        if(myBalance < selectedBuyIn) {
+            alert("Insufficient Balance!");
+            return;
+        }
+        
+        myBalance -= selectedBuyIn;
+        updateBalanceUI();
+        closeModal('confirmModal');
+
+        if(pendingAction === 'Public') {
+            alert("Sitting on Table... (Game Starts)"); 
+        } else if (pendingAction === 'Private') {
+            showModal('waitingModal'); 
+        }
+    }
+
+    function updateBalanceUI() {
+        const el = document.getElementById('balanceDisplay');
+        el.innerText = myBalance.toFixed(2) + " USDT";
+        el.classList.add('balance-deducted');
+        setTimeout(() => el.classList.remove('balance-deducted'), 500);
+    }
+
+    // --- PRIVATE TABLE LOGIC ---
+    function selectBoot(el, boot) {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        currentBoot = boot;
+        let minBuy = boot * 10;
+        document.getElementById('minBuyInDisp').innerText = minBuy.toFixed(1) + " USDT";
+    }
+
+    function createPrivateTable() {
+        let minBuy = currentBoot * 10;
+        let maxBuy = currentBoot * 100;
+        openBuyInModal(currentBoot, minBuy, maxBuy, 'Private');
+    }
+
+    function checkAndJoin() {
+        const code = document.getElementById('joinCode').value;
+        if(code.length > 4) {
+            openBuyInModal(0.5, 5.0, 50.0, 'Public'); 
+        } else {
+            alert("Invalid Code");
+        }
+    }
+
+    // --- UTILS ---
+    function shareRoom() {
+        const code = document.getElementById('roomCodeText').innerText;
+        if (navigator.share) {
+            navigator.share({ title: 'Teen Patti', text: 'Join Table: ' + code }).catch(console.error);
+        } else { alert("Share not supported"); }
+    }
+
+    function copyCode() {
+        const code = document.getElementById('roomCodeText').innerText;
+        navigator.clipboard.writeText(code).then(() => alert("Code Copied!"));
+    }
+
+    function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function minimizeRoom() { closeModal('waitingModal'); document.getElementById('activeRoomBar').style.display = 'flex'; }
+    function maximizeRoom() { document.getElementById('activeRoomBar').style.display = 'none'; showModal('waitingModal'); }
+    
+    function cancelRoom() { 
+        myBalance += selectedBuyIn; // Refund
+        updateBalanceUI();
+        closeModal('waitingModal'); 
+        document.getElementById('activeRoomBar').style.display = 'none'; 
+    }
+</script>
+
+<style>
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+</style>
+
+</body>
+</html>

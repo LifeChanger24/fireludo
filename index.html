@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - FireLudo</title>
+    <style>
+        /* --- RESET & VARIABLES (অপরিবর্তিত) --- */
+        :root {
+            --bg-body: #0B0E14; 
+            --accent-blue: #3b82f6; 
+            --gold: #FFD700;
+            --green: #2ECC71;
+            --text-white: #ffffff;
+            --text-muted: #8b92a3;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: #000;
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .app-container {
+            width: 100%; max-width: 420px; height: 100%;
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(circle at 50% 40%, rgba(46, 204, 113, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+            display: flex; flex-direction: column; 
+            position: relative;
+        }
+
+        /* --- 1. TOP LOGO --- */
+        .logo-section { padding-top: 60px; text-align: center; z-index: 2; }
+        .app-logo { font-size: 26px; font-weight: 800; color: white; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .logo-icon { font-size: 32px; filter: drop-shadow(0 0 15px #ff4500); }
+
+        /* --- 2. HERO VISUAL --- */
+        .hero-visual { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; perspective: 1000px; }
+        .float-wrapper { position: absolute; display: flex; justify-content: center; align-items: center; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5)); }
+        .obj-usdt { width: 140px; height: 140px; z-index: 10; animation: float-main 4s ease-in-out infinite; }
+        .obj-ludo { width: 90px; height: 90px; left: 30px; top: 25%; z-index: 5; transform: rotate(-15deg); animation: float-left 5s ease-in-out infinite; }
+        .obj-cards { width: 100px; height: 100px; right: 20px; bottom: 30%; z-index: 8; animation: float-right 6s ease-in-out infinite; }
+        .glow-circle { position: absolute; width: 180px; height: 180px; background: rgba(46, 204, 113, 0.4); border-radius: 50%; filter: blur(60px); z-index: 1; animation: pulse-glow 3s infinite; }
+
+        @keyframes float-main { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } }
+        @keyframes float-left { 0%, 100% { transform: translateY(0) rotate(-15deg); } 50% { transform: translateY(10px) rotate(-5deg); } }
+        @keyframes float-right { 0%, 100% { transform: translateY(0) rotate(10deg); } 50% { transform: translateY(-10px) rotate(15deg); } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
+
+        /* --- 3. BOTTOM LOGIN SECTION --- */
+        .login-section {
+            background: linear-gradient(to top, #0B0E14 90%, transparent);
+            padding: 20px 25px 50px 25px;
+            text-align: center;
+            z-index: 20;
+        }
+
+        .welcome-text h1 { font-size: 28px; color: white; margin: 0; line-height: 1.2; font-weight: 800; }
+        .highlight { color: var(--green); text-shadow: 0 0 20px rgba(46, 204, 113, 0.5); }
+        .welcome-text p { font-size: 13px; color: var(--text-muted); margin-top: 8px; margin-bottom: 25px; }
+
+        /* Input Styling */
+        .input-box {
+            width: 100%; background: #1A1D26; border: 1px solid #333; padding: 16px;
+            border-radius: 14px; color: white; font-size: 15px; outline: none;
+            margin-bottom: 15px; text-align: center;
+        }
+        .input-box:focus { border-color: var(--accent-blue); }
+
+        .main-btn {
+            width: 100%; background: var(--accent-blue); color: white; border: none; padding: 16px;
+            border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); transition: 0.2s;
+        }
+        .main-btn:active { transform: scale(0.98); }
+
+        /* OTP View */
+        #otp-view { display: none; }
+        .otp-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .otp-input {
+            width: 45px; height: 50px; background: #1A1D26; border: 1px solid #333;
+            border-radius: 10px; color: white; text-align: center; font-size: 20px; font-weight: 800;
+        }
+
+        .terms-text { color: #555; font-size: 11px; margin-top: 20px; line-height: 1.4; }
+        .terms-text a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid #333; }
+
+        /* --- REFERRAL POPUP --- */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        .referral-card {
+            width: 85%; max-width: 340px; background: #1A1D26; border-radius: 24px;
+            padding: 30px 20px; text-align: center; border: 1px solid rgba(46, 204, 113, 0.3);
+            animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .ref-title { color: white; font-size: 20px; font-weight: 800; margin-bottom: 5px; }
+        .ref-sub { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; }
+        .ref-input {
+            width: 100%; padding: 16px; background: #0B0E14; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; color: white; font-size: 18px; font-weight: 700; text-align: center;
+            outline: none; margin-bottom: 20px;
+        }
+        .btn-confirm { width: 100%; padding: 14px; background: var(--green); color: #00331f; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; margin-bottom: 12px; }
+        .btn-skip-outline { width: 100%; padding: 12px; background: transparent; color: var(--text-muted); border: 1px solid #333; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div class="logo-section">
+        <div class="app-logo"><span class="logo-icon">🔥</span> FireLudo</div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="glow-circle"></div>
+        <div class="float-wrapper obj-ludo">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+                <rect x="10" y="10" width="80" height="80" rx="15" fill="#FF5252" stroke="#B71C1C" stroke-width="2"/>
+                <circle cx="30" cy="30" r="8" fill="white"/><circle cx="70" cy="30" r="8" fill="white"/><circle cx="30" cy="70" r="8" fill="white"/><circle cx="70" cy="70" r="8" fill="white"/>
+            </svg>
+        </div>
+        <div class="float-wrapper obj-usdt">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+                <circle cx="50" cy="50" r="48" fill="#26A17B" stroke="#1D8262" stroke-width="2"/>
+                <rect x="25" y="30" width="50" height="10" fill="white"/><rect x="45" y="30" width="10" height="45" fill="white"/>
+            </svg>
+        </div>
+        <div class="float-wrapper obj-cards">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+                <g transform="rotate(-10 50 50)"><rect x="20" y="10" width="60" height="80" rx="5" fill="white" stroke="#ccc" stroke-width="1"/><text x="30" y="35" font-family="Arial" font-size="20" fill="red">♥</text></g>
+                <g transform="rotate(10 50 50) translate(10 0)"><rect x="20" y="10" width="60" height="80" rx="5" fill="white" stroke="#ccc" stroke-width="1"/><text x="30" y="35" font-family="Arial" font-size="20" fill="black">♠</text></g>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 3. LOGIN ACTION -->
+    <div class="login-section">
+        
+        <!-- Email View -->
+        <div id="email-view">
+            <div class="welcome-text">
+                <h1>Welcome to <span class="highlight">FireLudo</span></h1>
+                <p>Enter email to get verification code</p>
+            </div>
+            <input type="email" id="emailInput" class="input-box" placeholder="example@gmail.com">
+            <button class="main-btn" onclick="sendCode()">Enter App</button>
+        </div>
+
+        <!-- OTP View -->
+        <div id="otp-view">
+            <div class="welcome-text">
+                <h1>Verify <span class="highlight">Code</span></h1>
+                <p id="otp-sent-to" style="margin-bottom:15px; font-size:11px;"></p>
+            </div>
+            <div class="otp-container">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 1)">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 2)">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 3)">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 4)">
+            </div>
+            <button class="main-btn" onclick="verifyOTP()" style="background:var(--green); color:#00331f;">Next</button>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:15px; cursor:pointer;" onclick="location.reload()">Edit Email</p>
+        </div>
+
+        <div class="terms-text">By continuing, you agree to our <a href="#">Terms & Policy</a></div>
+    </div>
+
+    <!-- 4. REFERRAL POPUP -->
+    <div class="modal-overlay" id="refModal">
+        <div class="referral-card">
+            <span style="font-size:40px; display:block; margin-bottom:10px;">🎁</span>
+            <h3 class="ref-title">Referral Code</h3>
+            <p class="ref-sub">Enter code to get <span style="color:var(--green)">0.5 USDT</span> Bonus!</p>
+            <input type="text" class="ref-input" id="referralInput" placeholder="KIB24">
+            <button class="btn-confirm" onclick="finishLogin()">Claim Bonus</button>
+            <button class="btn-skip-outline" onclick="finishLogin()">Skip & Enter</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ফেইক ডাটাবেস চেক (বাস্তবে আপনি Firebase ব্যবহার করবেন)
+    const existingUsers = ["test@gmail.com", "admin@gmail.com"]; 
+
+    function sendCode() {
+        const email = document.getElementById('emailInput').value;
+        if(email === "" || !email.includes("@")) {
+            alert("Please enter a valid email");
+            return;
+        }
+        document.getElementById('otp-sent-to').innerText = "Sent to: " + email;
+        document.getElementById('email-view').style.display = 'none';
+        document.getElementById('otp-view').style.display = 'block';
+    }
+
+    function moveToNext(el, index) {
+        if (el.value.length === 1 && index < 4) {
+            document.querySelectorAll('.otp-input')[index].focus();
+        }
+    }
+
+    function verifyOTP() {
+        const email = document.getElementById('emailInput').value;
+        // এখানে ভেরিফিকেশন লজিক থাকবে
+        // যদি ইমেইলটি পুরাতন হয়:
+        if(existingUsers.includes(email)) {
+            finishLogin();
+        } else {
+            // যদি নতুন ইউজার হয়:
+            document.getElementById('refModal').style.display = 'flex';
+        }
+    }
+
+    function finishLogin() {
+        window.location.href = "home.html"; 
+    }
+</script>
+
+</body>
+</html>

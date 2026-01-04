@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Center - FireLudo Pro</title>
+    <style>
+        /* --- অরিজিনাল RESET & VARIABLES (১০০% ম্যাচিং) --- */
+        :root {
+            --bg-body: #0e0f14;
+            --bg-card: #1c1d26;
+            --text-white: #ffffff;
+            --text-muted: #8b8c99;
+            --nav-bg: #181922;
+            --accent-blue: #3b82f6; 
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --green: #4ADE80;
+            --gold: #FFD700;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: var(--bg-body); color: var(--text-white); display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .app-container { width: 100%; max-width: 420px; background-color: var(--bg-body); position: relative; padding-bottom: 110px; }
+
+        /* --- HEADER --- */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; position: sticky; top: 0; z-index: 100; background: rgba(14, 15, 20, 0.95); backdrop-filter: blur(5px); gap: 10px; }
+        .bonus-btn { display: flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #FF416C, #FF4B2B); padding: 6px 10px; border-radius: 20px; box-shadow: 0 0 15px rgba(255, 75, 43, 0.4); cursor: pointer; animation: pulse-btn 2s infinite; }
+        .bonus-text { font-size: 10px; font-weight: 800; color: white; text-transform: uppercase; }
+        @keyframes pulse-btn { 50% { transform: scale(1.05); } }
+        .logo-area { display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 800; flex-shrink: 0; }
+        .fire-icon { color: #0070f3; font-size: 20px; }
+        
+        .balance-pill { background: #1c1d26; padding: 6px 10px; border-radius: 20px; display: flex; align-items: center; gap: 6px; border: 1px solid #333; font-weight: bold; font-size: 12px; }
+        .coin-icon { display: flex; align-items: center; justify-content: center; }
+        .plus-btn { background: var(--green); color: black; border-radius: 50%; width: 16px; height: 16px; display: flex; justify-content: center; align-items: center; font-size: 10px; cursor: pointer;}
+        
+        .notif-btn { width: 36px; height: 36px; background: #1c1d26; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; border: 1px solid #333; cursor: pointer; }
+        .notif-btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; }
+
+        /* --- AUTO SLIDER --- */
+        .slider-section { padding: 15px 20px 5px; }
+        .slider-container { width: 100%; height: 160px; border-radius: 20px; overflow: hidden; position: relative; border: 1px solid #2d323e; }
+        .slides { display: flex; width: 200%; height: 100%; animation: slideAnim 10s infinite; }
+        .slide { width: 50%; height: 100%; display: flex; align-items: center; padding: 25px; }
+        .slide1 { background: linear-gradient(45deg, #1A120B, #3C2A21); border-left: 5px solid var(--gold); }
+        .slide2 { background: linear-gradient(45deg, #0B0E14, #1a233a); border-left: 5px solid var(--accent-blue); }
+        .slide h2 { font-size: 22px; font-weight: 900; line-height: 1.1; color: var(--gold); }
+        .slide p { font-size: 11px; margin-top: 5px; color: var(--text-muted); }
+        @keyframes slideAnim { 0%, 45% { transform: translateX(0); } 50%, 95% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+
+        /* --- SEARCH BAR --- */
+        .search-area { padding: 10px 20px; }
+        .search-box { background: #1a1d23; border: 1px solid #2d323e; border-radius: 12px; padding: 2px 15px; display: flex; align-items: center; gap: 10px; }
+        .search-box input { background: transparent; border: none; outline: none; color: #fff; padding: 10px 0; width: 100%; font-size: 13px; }
+        .search-box input::placeholder { color: #585966; }
+
+        /* --- GAME GRID --- */
+        .game-grid-master { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px 20px; }
+        .game-card-mini { display: flex; flex-direction: column; gap: 6px; transition: 0.3s; }
+        .img-box { width: 100%; height: 140px; border-radius: 12px; overflow: hidden; background: #1a1d23; border: 1px solid #2d323e; transition: 0.2s; cursor: pointer; }
+        .img-box:active { transform: scale(0.95); }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast; }
+        .play-status { display: flex; align-items: center; gap: 4px; font-size: 9px; color: #98a1ad; font-weight: 600; padding-left: 2px; }
+        .dot { width: 5px; height: 5px; background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71; }
+
+        /* --- FIXED BOTTOM NAV ( মাপ এবং এলাইনমেন্ট ঠিক করা হয়েছে ) --- */
+        .bottom-nav-container { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 92%; 
+            max-width: 400px; 
+            background: #181922; 
+            border-radius: 25px; 
+            padding: 0 10px; 
+            height: 70px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #2d2e3d; 
+            z-index: 1000; 
+            box-sizing: border-box;
+        }
+        .nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            color: #585966; 
+            font-size: 10px; 
+            gap: 4px; 
+            cursor: pointer; 
+            width: 20%; 
+            text-decoration: none;
+            transition: all 0.3s; 
+            flex-shrink: 0;
+        }
+        .nav-item.active { color: white; }
+        .nav-item.active svg { stroke: white; }
+        
+        .wallet-btn-wrap {
+            width: 20%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .wallet-btn { 
+            background: var(--accent-blue); 
+            width: 54px; 
+            height: 54px; 
+            border-radius: 18px; 
+            margin-top: -30px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            color: white; 
+            border: 5px solid var(--bg-body); 
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); 
+            flex-shrink: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="bonus-btn" onclick="location.href='bonus.html'">
+            <span style="font-size:12px;">🎁</span>
+            <span class="bonus-text">Bonus</span>
+        </div>
+        <div class="logo-area"><span class="fire-icon">🔥</span><span>FireLudo</span></div>
+        <div class="header-right" style="display:flex; align-items:center; gap:10px;">
+            <div class="balance-pill">
+                <span class="coin-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#26A17B"/><path d="M12.5 7H7V9H11V17H13V9H17V7H12.5Z" fill="white"/></svg>
+                </span> 1,561
+                <div class="plus-btn" onclick="location.href='deposit.html'">+</div>
+            </div>
+            <div class="notif-btn" onclick="location.href='notification.html'">
+                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto Slider -->
+    <div class="slider-section">
+        <div class="slider-container">
+            <div class="slides">
+                <div class="slide slide1"><div><h2>Exclusive <br> Tournament</h2><p>Grab $5,000 Prize Pool</p></div></div>
+                <div class="slide slide2"><div><h2>Invite & <br> Earn USDT</h2><p>Earn per referral</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-area">
+        <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="gameSearch" placeholder="Search your game..." onkeyup="filterGames()">
+        </div>
+    </div>
+
+    <!-- Game Grid -->
+    <div class="game-grid-master" id="gameGrid">
+        <div class="game-card-mini" data-name="ludo" onclick="location.href='ludolobby.html'">
+            <div class="img-box"><img src="https://i.ibb.co/kgMvN4mM/1767131563302.png"></div>
+            <div class="play-status"><div class="dot"></div> 1.2k playing</div>
+        </div>
+        <div class="game-card-mini" data-name="teen patti" onclick="location.href='teenpattilobby.html'">
+            <div class="img-box"><img src="https://i.ibb.co/HTwwkr7Y/1767130627909.png"></div>
+            <div class="play-status"><div class="dot"></div> 452 playing</div>
+        </div>
+        <div class="game-card-mini" data-name="crash" onclick="location.href='crash.html'">
+            <div class="img-box"><img src="https://i.ibb.co/SwZCt4Zb/1767131189698.png"></div>
+            <div class="play-status"><div class="dot"></div> 806 playing</div>
+        </div>
+        <div class="game-card-mini" data-name="dice" onclick="location.href='dice.html'">
+            <div class="img-box"><img src="https://i.ibb.co/5hpbD96m/1767131010455.png"></div>
+            <div class="play-status"><div class="dot"></div> 472 playing</div>
+        </div>
+        <div class="game-card-mini" data-name="coin" onclick="location.href='coin.html'">
+            <div class="img-box"><img src="https://i.ibb.co/Xrccfq7z/1767131289828.png"></div>
+            <div class="play-status"><div class="dot"></div> 373 playing</div>
+        </div>
+        <div class="game-card-mini" data-name="limbo" onclick="location.href='limbo.html'">
+            <div class="img-box"><img src="https://i.ibb.co/B2g1FxVB/1767134728950.png"></div>
+            <div class="play-status"><div class="dot"></div> 150 playing</div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav-container">
+        <a href="home.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <span>Home</span>
+        </a>
+        <a href="game.html" class="nav-item active">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24">
+                <path d="M6 12h4M8 10v4M15 11h.01M18 13h.01M21 7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7Z"></path>
+            </svg>
+            <span>Game</span>
+        </a>
+        <div class="wallet-btn-wrap">
+            <a href="wallet.html" class="wallet-btn">
+                <svg style="width:28px;height:28px;fill:none;stroke:white;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path></svg>
+            </a>
+        </div>
+        <a href="chat.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Chat</span>
+        </a>
+        <a href="menu.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <span>Menu</span>
+        </a>
+    </div>
+</div>
+
+<script>
+    function filterGames() {
+        let input = document.getElementById('gameSearch').value.toLowerCase();
+        let cards = document.getElementsByClassName('game-card-mini');
+        for (let i = 0; i < cards.length; i++) {
+            let name = cards[i].getAttribute('data-name');
+            cards[i].style.display = name.includes(input) ? "flex" : "none";
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Deposit - EVM Fixed</title>
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-body: #0B0E14; 
+            --bg-card: #1A1D26; 
+            --bg-input: #12141a;
+            
+            --green: #00FF94;
+            --yellow: #F0B90B; 
+            --purple: #8247E5; 
+            --blue: #0052FF;   
+            --navy: #28A0F0;   
+            
+            --text-white: #ffffff;
+            --text-muted: #8b92a3;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: #000;
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; justify-content: center;
+        }
+
+        .app-container {
+            width: 100%; max-width: 420px; height: 100%;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 255, 148, 0.1) 0%, transparent 50%);
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px; display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .back-btn { color: white; font-size: 22px; cursor: pointer; text-decoration: none; }
+        .header h2 { color: white; font-size: 18px; font-weight: 700; margin: 0; }
+        .help-icon { font-size: 20px; color: var(--text-muted); }
+
+        /* --- SCROLL CONTENT --- */
+        .content-scroll {
+            flex: 1; overflow-y: auto; padding: 0 20px 40px 20px;
+        }
+
+        /* --- 1. CUSTOM DROP-DOWN --- */
+        .label { color: var(--text-muted); font-size: 12px; margin-bottom: 10px; display: block; font-weight: 600; }
+        
+        .dropdown-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .dropdown-trigger {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dropdown-trigger:active { transform: scale(0.98); }
+
+        .selected-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #1c1f26;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .dropdown-options.show { display: block; animation: slideIn 0.2s ease-out; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .option {
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option:hover { background: rgba(255,255,255,0.05); }
+
+        .net-icon { 
+            width: 24px; height: 24px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; font-size: 10px; color: white; 
+        }
+
+        .net-name { color: white; font-size: 14px; font-weight: 600; }
+
+        .arrow-icon {
+            color: var(--text-muted);
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .dropdown-options.show + .dropdown-trigger .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        /* --- 2. QR CODE SECTION --- */
+        .qr-wrapper {
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            width: 200px; height: 200px;
+            margin: 0 auto 25px auto;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 255, 148, 0.15);
+        }
+        .qr-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.9; }
+        
+        .qr-logo-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 45px; height: 45px; background: white; border-radius: 50%; padding: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* --- 3. ADDRESS COPY --- */
+        .address-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .addr-text {
+            color: var(--text-muted); font-family: monospace; font-size: 13px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 80%;
+        }
+        .copy-btn {
+            color: var(--green); cursor: pointer; font-size: 18px;
+            padding: 5px; border-radius: 5px;
+        }
+
+        /* --- 4. WARNING --- */
+        .warning-box {
+            background: rgba(255, 69, 0, 0.1);
+            border: 1px solid rgba(255, 69, 0, 0.2);
+            border-radius: 10px; padding: 12px;
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+        .warn-icon { color: #ff3d00; font-size: 16px; margin-top: 2px; }
+        .warn-text { color: #ffab91; font-size: 11px; line-height: 1.4; }
+
+        .share-btn {
+            width: 100%; padding: 14px; border-radius: 12px; border: none;
+            background: var(--green); color: black; font-weight: 800; font-size: 14px;
+            margin-top: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .toast {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 10px 20px; border-radius: 20px;
+            font-size: 12px; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div class="header">
+        <!-- Back button linked to wallet.html -->
+        <a href="wallet.html" class="back-btn">←</a>
+        <h2>Deposit USDT</h2>
+        <span class="help-icon">?</span>
+    </div>
+
+    <div class="content-scroll">
+        
+        <span class="label">Select Network</span>
+        
+        <!-- Network Dropdown -->
+        <div class="dropdown-container">
+            <div class="dropdown-trigger" id="dropTrigger" onclick="toggleDropdown()">
+                <div class="selected-content" id="selectedContent">
+                    <div class="net-icon" style="background:var(--yellow)">BNB</div>
+                    <span class="net-name">BSC (BEP20)</span>
+                </div>
+                <span class="arrow-icon">▼</span>
+            </div>
+            
+            <div class="dropdown-options" id="dropOptions">
+                <div class="option" onclick="selectNet('bsc', 'BNB', 'var(--yellow)', 'BSC (BEP20)')">
+                    <div class="net-icon" style="background:var(--yellow)">BNB</div>
+                    <span class="net-name">BSC (BEP20)</span>
+                </div>
+                <div class="option" onclick="selectNet('poly', 'POL', 'var(--purple)', 'Polygon')">
+                    <div class="net-icon" style="background:var(--purple)">POL</div>
+                    <span class="net-name">Polygon</span>
+                </div>
+                <div class="option" onclick="selectNet('base', 'BASE', 'var(--blue)', 'Base')">
+                    <div class="net-icon" style="background:var(--blue)">BASE</div>
+                    <span class="net-name">Base</span>
+                </div>
+                <div class="option" onclick="selectNet('arb', 'ARB', 'var(--navy)', 'Arbitrum')">
+                    <div class="net-icon" style="background:var(--navy)">ARB</div>
+                    <span class="net-name">Arbitrum</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="qr-wrapper">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=0x71C7656EC7ab88b098defB751B7401B5f6d8976F" class="qr-img">
+            <div class="qr-logo-overlay">
+                <svg viewBox="0 0 100 100" width="100%" height="100%">
+                    <circle cx="50" cy="50" r="50" fill="#26A17B"/>
+                    <text x="50" y="70" font-family="Arial" font-weight="bold" font-size="60" text-anchor="middle" fill="white">T</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Address Box -->
+        <span class="label">Wallet Address</span>
+        <div class="address-box">
+            <span class="addr-text" id="wallet-address">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</span>
+            <span class="copy-btn" onclick="copyAddress()">📋</span>
+        </div>
+
+        <!-- Warning -->
+        <div class="warning-box">
+            <span class="warn-icon">⚠️</span>
+            <span class="warn-text">
+                This address supports <b>EVM Networks</b> only. Ensure the selected network matches your withdrawal network.
+            </span>
+        </div>
+
+        <button class="share-btn">📤 Share Address</button>
+
+    </div>
+
+    <div class="toast" id="toast">Address Copied!</div>
+
+</div>
+
+<script>
+    function toggleDropdown() {
+        document.getElementById('dropOptions').classList.toggle('show');
+    }
+
+    function selectNet(id, shortName, color, fullName) {
+        // Update Trigger UI
+        const selectedContent = document.getElementById('selectedContent');
+        selectedContent.innerHTML = `
+            <div class="net-icon" style="background:${color}">${shortName}</div>
+            <span class="net-name">${fullName}</span>
+        `;
+        
+        // Highlight active border
+        document.getElementById('dropTrigger').style.borderColor = color;
+        
+        // Close Dropdown
+        toggleDropdown();
+    }
+
+    // Close dropdown if clicked outside
+    window.onclick = function(event) {
+        if (!event.target.closest('.dropdown-container')) {
+            document.getElementById('dropOptions').classList.remove('show');
+        }
+    }
+
+    function copyAddress() {
+        const text = document.getElementById('wallet-address').innerText;
+        navigator.clipboard.writeText(text);
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+</script>
+
+</body>
+</html>

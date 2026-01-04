@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Withdraw - Fiery Ludo</title>
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-body: #0B0E14; 
+            --bg-card: #1A1D26; 
+            --bg-input: #12141a;
+            
+            --green: #00FF94;
+            --red: #FF4757;
+            --yellow: #F0B90B;
+            --purple: #8247E5;
+            --blue: #0052FF;
+            --navy: #28A0F0;
+            
+            --text-white: #ffffff;
+            --text-muted: #8b92a3;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: #000;
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; justify-content: center;
+        }
+
+        .app-container {
+            width: 100%; max-width: 420px; height: 100%;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(circle at 50% 0%, rgba(255, 69, 0, 0.05) 0%, transparent 50%);
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px; display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .back-btn { color: white; font-size: 22px; cursor: pointer; text-decoration: none; }
+        .header h2 { color: white; font-size: 18px; font-weight: 700; margin: 0; }
+        .history-icon { font-size: 18px; color: var(--text-muted); cursor: pointer; }
+
+        /* --- SCROLL CONTENT --- */
+        .content-scroll {
+            flex: 1; overflow-y: auto; padding: 0 20px 40px 20px;
+        }
+
+        /* --- BALANCE DISPLAY --- */
+        .avail-bal {
+            text-align: right; font-size: 12px; color: var(--text-muted); margin-bottom: 20px;
+        }
+        .avail-bal span { color: var(--text-white); font-weight: bold; }
+
+        /* --- 1. CUSTOM DROP-DOWN --- */
+        .label { color: var(--text-muted); font-size: 12px; margin-bottom: 8px; display: block; font-weight: 600; }
+        
+        .dropdown-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .dropdown-trigger {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .selected-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #1c1f26;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .dropdown-options.show { display: block; animation: slideIn 0.2s ease-out; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .option {
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option:hover { background: rgba(255,255,255,0.05); }
+
+        .net-icon { 
+            width: 24px; height: 24px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; font-size: 10px; color: white; 
+        }
+
+        .net-name { color: white; font-size: 14px; font-weight: 600; }
+
+        .arrow-icon {
+            color: var(--text-muted);
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        /* --- 2. INPUT FIELDS --- */
+        .input-group {
+            position: relative; margin-bottom: 20px;
+        }
+        .input-field {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border-color);
+            padding: 14px 45px 14px 15px; border-radius: 12px;
+            color: white; font-size: 14px; font-weight: 600; outline: none;
+        }
+        .input-field:focus { border-color: var(--green); }
+        
+        .input-icon-right {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            color: var(--green); font-size: 12px; font-weight: bold; cursor: pointer;
+        }
+        .paste-btn { color: var(--accent-blue); font-size: 18px; cursor: pointer; }
+
+        /* --- 3. SUMMARY BOX --- */
+        .summary-box {
+            background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px;
+            margin-bottom: 25px; border: 1px dashed var(--border-color);
+        }
+        .sum-row {
+            display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;
+        }
+        .sum-label { color: var(--text-muted); }
+        .sum-val { color: white; font-weight: 600; }
+        .total-row {
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 5px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .total-val { font-size: 18px; font-weight: 800; color: var(--green); }
+
+        /* --- BUTTON --- */
+        .withdraw-btn {
+            width: 100%; padding: 14px; border-radius: 12px; border: none;
+            background: var(--green); color: black; font-weight: 800; font-size: 15px;
+            cursor: pointer; opacity: 0.5; pointer-events: none;
+            transition: 0.3s;
+        }
+        .withdraw-btn.active { opacity: 1; pointer-events: all; box-shadow: 0 5px 20px rgba(0, 255, 148, 0.3); }
+
+        .error-msg {
+            color: var(--red); font-size: 11px; margin-top: 5px; display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- Header - Back button linked to wallet.html -->
+    <div class="header">
+        <a href="wallet.html" class="back-btn">←</a>
+        <h2>Withdraw USDT</h2>
+        <span class="history-icon">🕒</span>
+    </div>
+
+    <div class="content-scroll">
+        
+        <div class="avail-bal">Available: <span id="max-bal">1561.45</span> USDT</div>
+
+        <!-- 1. Custom Network Dropdown -->
+        <span class="label">Select Network</span>
+        <div class="dropdown-container">
+            <div class="dropdown-trigger" id="dropTrigger" onclick="toggleDropdown()">
+                <div class="selected-content" id="selectedContent">
+                    <div class="net-icon" style="background:var(--yellow)">BNB</div>
+                    <span class="net-name">BSC (BEP20)</span>
+                </div>
+                <span class="arrow-icon" id="arrow">▼</span>
+            </div>
+            
+            <div class="dropdown-options" id="dropOptions">
+                <div class="option" onclick="selectNet('BSC (BEP20)', 'BNB', 'var(--yellow)')">
+                    <div class="net-icon" style="background:var(--yellow)">BNB</div>
+                    <span class="net-name">BSC (BEP20)</span>
+                </div>
+                <div class="option" onclick="selectNet('Polygon', 'POL', 'var(--purple)')">
+                    <div class="net-icon" style="background:var(--purple)">POL</div>
+                    <span class="net-name">Polygon</span>
+                </div>
+                <div class="option" onclick="selectNet('Base', 'BASE', 'var(--blue)')">
+                    <div class="net-icon" style="background:var(--blue)">BASE</div>
+                    <span class="net-name">Base</span>
+                </div>
+                <div class="option" onclick="selectNet('Arbitrum', 'ARB', 'var(--navy)')">
+                    <div class="net-icon" style="background:var(--navy)">ARB</div>
+                    <span class="net-name">Arbitrum</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Address Input -->
+        <span class="label">Wallet Address</span>
+        <div class="input-group">
+            <input type="text" class="input-field" id="addr-input" placeholder="Paste USDT Address">
+            <span class="input-icon-right paste-btn" onclick="pasteAddr()">📋</span>
+        </div>
+
+        <!-- 3. Amount Input -->
+        <span class="label">Amount (Min: 1.00)</span>
+        <div class="input-group">
+            <input type="number" class="input-field" id="amount-input" placeholder="0.00" oninput="calculate()">
+            <span class="input-icon-right" onclick="setMax()" style="color:var(--yellow); cursor:pointer;">MAX</span>
+        </div>
+        <div class="error-msg" id="err-msg">Minimum withdrawal is 1.00 USDT</div>
+
+        <!-- 4. Summary -->
+        <div class="summary-box">
+            <div class="sum-row">
+                <span class="sum-label">Withdraw Amount</span>
+                <span class="sum-val" id="disp-amount">0.00 USDT</span>
+            </div>
+            <div class="sum-row">
+                <span class="sum-label">Network Fee</span>
+                <span class="sum-val" style="color:var(--red)">- 0.20 USDT</span>
+            </div>
+            <div class="total-row">
+                <span class="sum-label">You Receive</span>
+                <span class="total-val" id="final-amount">0.00 USDT</span>
+            </div>
+        </div>
+
+        <button class="withdraw-btn" id="submit-btn" onclick="processWithdraw()">
+            Withdraw Now
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+    const fee = 0.20;
+    const minWithdraw = 1.00;
+    let selectedNetwork = 'BSC (BEP20)';
+
+    function toggleDropdown() {
+        const options = document.getElementById('dropOptions');
+        const arrow = document.getElementById('arrow');
+        const isShow = options.classList.toggle('show');
+        arrow.style.transform = isShow ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    function selectNet(name, short, color) {
+        selectedNetwork = name;
+        document.getElementById('selectedContent').innerHTML = `
+            <div class="net-icon" style="background:${color}">${short}</div>
+            <span class="net-name">${name}</span>
+        `;
+        toggleDropdown();
+    }
+
+    // Close dropdown if clicked outside
+    window.onclick = function(event) {
+        if (!event.target.closest('.dropdown-container')) {
+            document.getElementById('dropOptions').classList.remove('show');
+            document.getElementById('arrow').style.transform = 'rotate(0deg)';
+        }
+    }
+
+    async function pasteAddr() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('addr-input').value = text;
+            calculate();
+        } catch (err) {
+            alert('Failed to read clipboard');
+        }
+    }
+
+    function setMax() {
+        const max = document.getElementById('max-bal').innerText;
+        document.getElementById('amount-input').value = max;
+        calculate();
+    }
+
+    function calculate() {
+        const inputVal = parseFloat(document.getElementById('amount-input').value);
+        const displayAmt = document.getElementById('disp-amount');
+        const finalAmt = document.getElementById('final-amount');
+        const errorMsg = document.getElementById('err-msg');
+        const btn = document.getElementById('submit-btn');
+        const addr = document.getElementById('addr-input').value;
+
+        if (isNaN(inputVal) || inputVal <= 0) {
+            displayAmt.innerText = "0.00 USDT";
+            finalAmt.innerText = "0.00 USDT";
+            btn.classList.remove('active');
+            errorMsg.style.display = 'none';
+            return;
+        }
+
+        displayAmt.innerText = inputVal.toFixed(2) + " USDT";
+
+        if (inputVal < minWithdraw) {
+            errorMsg.style.display = 'block';
+            finalAmt.innerText = "0.00 USDT";
+            btn.classList.remove('active');
+        } else {
+            errorMsg.style.display = 'none';
+            let receive = inputVal - fee;
+            finalAmt.innerText = (receive > 0 ? receive : 0).toFixed(2) + " USDT";
+            
+            if(addr.length > 5) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    }
+
+    document.getElementById('addr-input').addEventListener('input', calculate);
+
+    function processWithdraw() {
+        const amt = document.getElementById('amount-input').value;
+        const addr = document.getElementById('addr-input').value;
+        alert(`Request Sent!\n\nAmount: ${amt} USDT\nNet: ${selectedNetwork}\nFee: ${fee} USDT\n\nTo: ${addr}`);
+    }
+</script>
+
+</body>
+</html>

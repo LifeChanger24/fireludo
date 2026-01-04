@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Assets - FireLudo Pro</title>
+    <style>
+        /* --- অরিজিনাল RESET & VARIABLES (১০০% অপরিবর্তিত) --- */
+        :root {
+            --bg-body: #0e0f14;
+            --text-white: #ffffff;
+            --text-muted: #8b8c99;
+            --accent-blue: #3b82f6; 
+            --green-usdt: #26A17B; 
+            --gold-clr: #FFD700;
+            --border: rgba(255, 255, 255, 0.05);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: #000; color: var(--text-white); display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .app-container { width: 100%; max-width: 420px; background-color: var(--bg-body); position: relative; padding-bottom: 110px; }
+
+        /* --- HEADER --- */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 25px 20px 0; position: sticky; top: 0; z-index: 100; background: var(--bg-body); }
+        .header-left { flex: 1; }
+        .header h2 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+        .header-line { width: 85%; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent); }
+        
+        .history-circle { 
+            width: 32px; height: 32px; border-radius: 50%; border: 1px solid #333; 
+            display: flex; justify-content: center; align-items: center; cursor: pointer; background: #1a1d23;
+        }
+
+        /* --- BALANCE AREA --- */
+        .balance-area { display: flex; justify-content: space-between; padding: 30px 20px 20px; }
+        .bal-box { display: flex; flex-direction: column; gap: 5px; }
+        .bal-box.right { text-align: right; }
+        .label { font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
+        .val { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+
+        .usdt-txt { color: var(--green-usdt); }
+        .gold-txt { color: var(--gold-clr); }
+
+        /* --- ACTION BUTTONS --- */
+        .action-row { display: flex; justify-content: space-between; padding: 15px 20px; margin-bottom: 10px; }
+        .act-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
+        .act-icon { width: 50px; height: 50px; border-radius: 50%; background: #1c1d26; display: flex; justify-content: center; align-items: center; border: 1px solid #333; transition: 0.2s; }
+        .act-btn:active .act-icon { transform: scale(0.9); background: #2d2e3d; }
+        .act-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.2; }
+        .act-btn span { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+        /* --- COIN LIST --- */
+        .coin-list { padding: 0 20px; }
+        .coin-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .coin-item:last-child { border-bottom: none; }
+        .coin-left { display: flex; align-items: center; gap: 14px; }
+        
+        .icon-circle { width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; background: #1a1d23; }
+        .icon-circle img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .coin-info h4 { font-size: 14px; font-weight: 700; color: #fff; }
+        .coin-info p { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .coin-right { text-align: right; }
+        .coin-bal { font-size: 14px; font-weight: 700; color: #fff; }
+        .coin-usd { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+        /* --- FIXED BOTTOM NAV ( মাপ এবং এলাইনমেন্ট ঠিক করা হয়েছে ) --- */
+        .bottom-nav-container { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 92%; 
+            max-width: 400px; 
+            background: #181922; 
+            border-radius: 25px; 
+            padding: 0 10px; 
+            height: 70px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #2d2e3d; 
+            z-index: 1000; 
+            box-sizing: border-box;
+        }
+        .nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            color: #585966; 
+            font-size: 10px; 
+            gap: 4px; 
+            cursor: pointer; 
+            width: 20%; 
+            text-decoration: none;
+            transition: all 0.3s; 
+            flex-shrink: 0;
+        }
+        .nav-item.active { color: white; }
+        
+        .wallet-btn-wrap {
+            width: 20%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .wallet-btn { 
+            background: var(--accent-blue); 
+            width: 54px; 
+            height: 54px; 
+            border-radius: 18px; 
+            margin-top: -30px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            color: white; 
+            border: 5px solid var(--bg-body); 
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); 
+            flex-shrink: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h2>Assets.</h2>
+            <div class="header-line"></div>
+        </div>
+        <div class="history-circle" onclick="location.href='notification.html'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        </div>
+    </div>
+
+    <!-- Balance Section -->
+    <div class="balance-area">
+        <div class="bal-box">
+            <span class="label">Total <span class="usdt-txt">USDT</span></span>
+            <span class="val">$1,561.45</span>
+        </div>
+        <div class="bal-box right">
+            <span class="label">Total <span class="gold-txt">GOLD</span></span>
+            <span class="val">1,900</span>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-row">
+        <div class="act-btn" onclick="location.href='withdraw.html'">
+            <div class="act-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg></div>
+            <span>Send</span>
+        </div>
+        <div class="act-btn" onclick="location.href='deposit.html'">
+            <div class="act-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg></div>
+            <span>Receive</span>
+        </div>
+        <div class="act-btn" onclick="location.href='swap.html'">
+            <div class="act-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></div>
+            <span>Swap</span>
+        </div>
+        <div class="act-btn" onclick="location.href='bonus.html'">
+            <div class="act-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></div>
+            <span>Earn</span>
+        </div>
+    </div>
+
+    <!-- Coin List -->
+    <div class="coin-list">
+        <div class="coin-item" onclick="location.href='deposit.html'">
+            <div class="coin-left">
+                <div class="icon-circle"><img src="https://i.ibb.co.com/gLxQt9rP/images.png"></div>
+                <div class="coin-info"><h4>USDT</h4><p>Tether USD</p></div>
+            </div>
+            <div class="coin-right"><div class="coin-bal">1,561.45</div><div class="coin-usd">$1,561.45</div></div>
+        </div>
+        <div class="coin-item" onclick="location.href='swap.html'">
+            <div class="coin-left">
+                <div class="icon-circle"><img src="https://i.ibb.co.com/27zLYb0L/images-3.jpg"></div>
+                <div class="coin-info"><h4>GOLD</h4><p>FireLudo Asset</p></div>
+            </div>
+            <div class="coin-right"><div class="coin-bal">1,900</div><div class="coin-usd">$19.00</div></div>
+        </div>
+        <div class="coin-item">
+            <div class="coin-left">
+                <div class="icon-circle"><img src="https://i.ibb.co.com/cK2nLgVT/images-3.png"></div>
+                <div class="coin-info"><h4>USDC</h4><p>USD Coin</p></div>
+            </div>
+            <div class="coin-right"><div class="coin-bal">0.00</div><div class="coin-usd">$0.00</div></div>
+        </div>
+        <div class="coin-item">
+            <div class="coin-left">
+                <div class="icon-circle"><img src="https://i.ibb.co.com/7d8fnbGF/images-2.png"></div>
+                <div class="coin-info"><h4>BNB</h4><p>Binance Coin</p></div>
+            </div>
+            <div class="coin-right"><div class="coin-bal">0.0000</div><div class="coin-usd">$0.00</div></div>
+        </div>
+        <div class="coin-item">
+            <div class="coin-left">
+                <div class="icon-circle"><img src="https://i.ibb.co.com/BJKkSTq/images-4.png"></div>
+                <div class="coin-info"><h4>TRX</h4><p>Tron Network</p></div>
+            </div>
+            <div class="coin-right"><div class="coin-bal">0.0000</div><div class="coin-usd">$0.00</div></div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav-container">
+        <a href="home.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <span>Home</span>
+        </a>
+        <a href="game.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01M21 7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7Z"></path></svg>
+            <span>Game</span>
+        </a>
+        <div class="wallet-btn-wrap">
+            <a href="wallet.html" class="wallet-btn">
+                <svg style="width:28px;height:28px;fill:none;stroke:white;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path></svg>
+            </a>
+        </div>
+        <a href="chat.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Chat</span>
+        </a>
+        <a href="menu.html" class="nav-item">
+            <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <span>Menu</span>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
