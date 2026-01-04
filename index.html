@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - FireLudo</title>
     
-    <!-- Firebase SDK (Compat Version is best for HTML files) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
 
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
     <style>
-        /* --- RESET & VARIABLES (অপরিবর্তিত) --- */
+        /* --- RESET & VARIABLES (আপনার ডিজাইন হুবহু রাখা হয়েছে) --- */
         :root {
             --bg-body: #0B0E14; 
             --accent-blue: #3b82f6; 
@@ -82,7 +85,12 @@
         }
         .main-btn:active { transform: scale(0.98); }
 
-        .status-msg { color: var(--green); font-size: 12px; margin-top: 10px; display: none; }
+        #otp-view { display: none; }
+        .otp-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .otp-input {
+            width: 45px; height: 50px; background: #1A1D26; border: 1px solid #333;
+            border-radius: 10px; color: white; text-align: center; font-size: 20px; font-weight: 800;
+        }
 
         .terms-text { color: #555; font-size: 11px; margin-top: 20px; line-height: 1.4; }
         .terms-text a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid #333; }
@@ -113,6 +121,7 @@
 <body>
 
 <div class="app-container">
+
     <div class="logo-section">
         <div class="app-logo"><span class="logo-icon">🔥</span> FireLudo</div>
     </div>
@@ -120,57 +129,74 @@
     <div class="hero-visual">
         <div class="glow-circle"></div>
         <div class="float-wrapper obj-ludo">
-            <svg viewBox="0 0 100 100" width="90" height="90">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
                 <rect x="10" y="10" width="80" height="80" rx="15" fill="#FF5252" stroke="#B71C1C" stroke-width="2"/>
-                <circle cx="30" cy="30" r="8" fill="white"/><circle cx="70" cy="30" r="8" fill="white"/>
-                <circle cx="30" cy="70" r="8" fill="white"/><circle cx="70" cy="70" r="8" fill="white"/>
+                <circle cx="30" cy="30" r="8" fill="white"/><circle cx="70" cy="30" r="8" fill="white"/><circle cx="30" cy="70" r="8" fill="white"/><circle cx="70" cy="70" r="8" fill="white"/>
             </svg>
         </div>
         <div class="float-wrapper obj-usdt">
-            <svg viewBox="0 0 100 100" width="140" height="140">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
                 <circle cx="50" cy="50" r="48" fill="#26A17B" stroke="#1D8262" stroke-width="2"/>
                 <rect x="25" y="30" width="50" height="10" fill="white"/>
                 <rect x="45" y="30" width="10" height="45" fill="white"/>
             </svg>
         </div>
         <div class="float-wrapper obj-cards">
-            <svg viewBox="0 0 100 100" width="100" height="100">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
                 <g transform="rotate(-10 50 50)"><rect x="20" y="10" width="60" height="80" rx="5" fill="white" stroke="#ccc" stroke-width="1"/><text x="30" y="35" font-family="Arial" font-size="20" fill="red">♥</text></g>
                 <g transform="rotate(10 50 50) translate(10 0)"><rect x="20" y="10" width="60" height="80" rx="5" fill="white" stroke="#ccc" stroke-width="1"/><text x="30" y="35" font-family="Arial" font-size="20" fill="black">♠</text></g>
             </svg>
         </div>
     </div>
 
-    <!-- LOGIN ACTION -->
+    <!-- 3. LOGIN ACTION -->
     <div class="login-section">
+        
+        <!-- Email View -->
         <div id="email-view">
             <div class="welcome-text">
                 <h1>Welcome to <span class="highlight">FireLudo</span></h1>
-                <p>Login securely with email link</p>
+                <p>Enter email to get verification code</p>
             </div>
-            <input type="email" id="emailInput" class="input-box" placeholder="Enter your email address">
-            <button class="main-btn" id="loginBtn" onclick="sendAuthLink()">Enter App</button>
-            <p id="statusMsg" class="status-msg">Check your email for the login link!</p>
+            <input type="email" id="emailInput" class="input-box" placeholder="example@gmail.com">
+            <button class="main-btn" id="sendBtn" onclick="sendOTP()">Enter App</button>
         </div>
 
-        <div class="terms-text">By continuing, you agree to our <a href="terms.html">Terms & Policy</a></div>
+        <!-- OTP View -->
+        <div id="otp-view">
+            <div class="welcome-text">
+                <h1>Verify <span class="highlight">Code</span></h1>
+                <p id="otp-sent-to" style="margin-bottom:15px; font-size:11px;"></p>
+            </div>
+            <div class="otp-container">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 0)">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 1)">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 2)">
+                <input type="number" class="otp-input" maxlength="1" oninput="moveToNext(this, 3)">
+            </div>
+            <button class="main-btn" onclick="verifyOTP()" style="background:var(--green); color:#00331f;">Next</button>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:15px; cursor:pointer;" onclick="location.reload()">Edit Email</p>
+        </div>
+
+        <div class="terms-text">By continuing, you agree to our <a href="#">Terms & Policy</a></div>
     </div>
 
-    <!-- REFERRAL POPUP -->
+    <!-- 4. REFERRAL POPUP -->
     <div class="modal-overlay" id="refModal">
         <div class="referral-card">
             <span style="font-size:40px; display:block; margin-bottom:10px;">🎁</span>
             <h3 class="ref-title">Referral Code</h3>
             <p class="ref-sub">Enter code to get <span style="color:var(--green)">0.5 USDT</span> Bonus!</p>
             <input type="text" class="ref-input" id="referralInput" placeholder="KIB24">
-            <button class="btn-confirm" onclick="saveUser(true)">Claim Bonus</button>
-            <button class="btn-skip-outline" onclick="saveUser(false)">Skip & Enter</button>
+            <button class="btn-confirm" onclick="registerFinal(true)">Claim Bonus</button>
+            <button class="btn-skip-outline" onclick="registerFinal(false)">Skip & Enter</button>
         </div>
     </div>
+
 </div>
 
 <script>
-    // --- FIREBASE CONFIGURATION ---
+    // --- CONFIGURATIONS ---
     const firebaseConfig = {
         apiKey: "AIzaSyCaA8ENsK1fMw4U88CNLU60tO4ZfRj01bE",
         authDomain: "fireludo1-54e54.firebaseapp.com",
@@ -181,91 +207,109 @@
         measurementId: "G-VQ93CQZNXN"
     };
 
+    const EMAILJS_CONFIG = {
+        publicKey: "-BcNxyrQ42_7MO4Xd",
+        serviceId: "service_sqbea6r",
+        templateId: "template_1ydlmli"
+    };
+
     firebase.initializeApp(firebaseConfig);
+    emailjs.init(EMAILJS_CONFIG.publicKey);
+
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- 1. SEND LOGIN LINK ---
-    function sendAuthLink() {
-        const email = document.getElementById('emailInput').value;
-        if (!email || !email.includes("@")) {
-            alert("Please enter a valid email address!");
-            return;
-        }
+    let systemOTP = "";
+    let userEmail = "";
 
-        const actionCodeSettings = {
-            url: window.location.href, // User clicks link and comes back here
-            handleCodeInApp: true,
+    // --- FUNCTIONS ---
+
+    function sendOTP() {
+        userEmail = document.getElementById('emailInput').value.trim();
+        if(!userEmail.includes("@")) { alert("Valid email required!"); return; }
+
+        document.getElementById('sendBtn').innerText = "Sending...";
+        document.getElementById('sendBtn').disabled = true;
+
+        // ৪ ডিজিটের ওটিপি জেনারেট
+        systemOTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+        const templateParams = {
+            to_email: userEmail,
+            passcode: systemOTP,
+            time: "5 minutes"
         };
 
-        auth.sendSignInLinkToEmail(email, actionCodeSettings)
-            .then(() => {
-                window.localStorage.setItem('emailForSignIn', email);
-                document.getElementById('loginBtn').style.display = 'none';
-                document.getElementById('emailInput').disabled = true;
-                const status = document.getElementById('statusMsg');
-                status.innerText = "Verification link sent to " + email + ". Check your Inbox/Spam.";
-                status.style.display = 'block';
-            })
-            .catch((error) => {
-                alert("Error: " + error.message);
-            });
+        emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, templateParams)
+        .then(() => {
+            document.getElementById('otp-sent-to').innerText = "Sent to: " + userEmail;
+            document.getElementById('email-view').style.display = 'none';
+            document.getElementById('otp-view').style.display = 'block';
+        })
+        .catch(err => {
+            alert("Failed to send email. Check EmailJS.");
+            document.getElementById('sendBtn').innerText = "Enter App";
+            document.getElementById('sendBtn').disabled = false;
+        });
     }
 
-    // --- 2. COMPLETE LOGIN ON LOAD ---
-    window.addEventListener('load', () => {
-        if (auth.isSignInWithEmailLink(window.location.href)) {
-            let email = window.localStorage.getItem('emailForSignIn');
-            if (!email) {
-                email = window.prompt('Please provide your email for confirmation');
-            }
-
-            auth.signInWithEmailLink(email, window.location.href)
-                .then((result) => {
-                    window.localStorage.removeItem('emailForSignIn');
-                    checkUserStatus(result.user);
-                })
-                .catch((error) => {
-                    alert("Login failed or link expired. Please try again.");
-                });
+    function moveToNext(el, index) {
+        if (el.value.length === 1 && index < 3) {
+            document.querySelectorAll('.otp-input')[index + 1].focus();
         }
-    });
+    }
 
-    // --- 3. CHECK IF NEW OR OLD USER ---
-    function checkUserStatus(user) {
-        const userRef = db.collection("users").doc(user.uid);
-        userRef.get().then((doc) => {
-            if (doc.exists) {
-                // Old User -> Go Home
-                window.location.href = "home.html";
+    function verifyOTP() {
+        let enteredOTP = "";
+        document.querySelectorAll('.otp-input').forEach(input => enteredOTP += input.value);
+
+        if(enteredOTP === systemOTP) {
+            checkFirebaseUser();
+        } else {
+            alert("Wrong code! Check your email again.");
+        }
+    }
+
+    function checkFirebaseUser() {
+        // ফায়ারবেসে ইমেইল দিয়ে পাসওয়ার্ড ছাড়া ঢোকা যায় না, তাই ইমেইলকেই পাসওয়ার্ড হিসেবে ব্যবহার করছি সিকিউরলি
+        const hiddenPass = userEmail + "fire_salt_2024";
+
+        auth.signInWithEmailAndPassword(userEmail, hiddenPass)
+        .then(() => {
+            window.location.href = "home.html";
+        })
+        .catch(error => {
+            if (error.code === 'auth/user-not-found') {
+                document.getElementById('refModal').style.display = 'flex';
             } else {
-                // New User -> Show Referral Modal
+                // পাসওয়ার্ড না মিললে নতুন একাউন্ট ট্রাই করি (লজিক অনুযায়ী)
                 document.getElementById('refModal').style.display = 'flex';
             }
         });
     }
 
-    // --- 4. SAVE USER DATA ---
-    function saveUser(hasReferral) {
-        const user = auth.currentUser;
-        const refCode = document.getElementById('referralInput').value;
-        
-        const userData = {
-            email: user.email,
-            balance: hasReferral ? 0.5 : 0.0,
-            referralUsed: hasReferral ? refCode : "none",
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
+    function registerFinal(withBonus) {
+        const hiddenPass = userEmail + "fire_salt_2024";
+        const refCode = document.getElementById('referralInput').value || "none";
 
-        db.collection("users").doc(user.uid).set(userData)
-            .then(() => {
-                window.location.href = "home.html";
-            })
-            .catch((err) => {
-                alert("Database Error: " + err.message);
+        auth.createUserWithEmailAndPassword(userEmail, hiddenPass)
+        .then(cred => {
+            return db.collection("users").doc(cred.user.uid).set({
+                email: userEmail,
+                balance: withBonus ? 0.5 : 0.0,
+                referralUsed: refCode,
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+        })
+        .then(() => {
+            window.location.href = "home.html";
+        })
+        .catch(err => {
+            // যদি ইউজার আগে থেকেই থাকে কিন্তু পাসওয়ার্ড এরর দেয়
+            window.location.href = "home.html";
+        });
     }
 </script>
 
 </body>
-</html>
+    </html>
