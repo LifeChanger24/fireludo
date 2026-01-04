@@ -64,62 +64,25 @@
         .coin-bal { font-size: 14px; font-weight: 700; color: #fff; }
         .coin-usd { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 
-        /* --- FIXED BOTTOM NAV ( মাপ এবং এলাইনমেন্ট ঠিক করা হয়েছে ) --- */
+        /* --- FIXED BOTTOM NAV --- */
         .bottom-nav-container { 
-            position: fixed; 
-            bottom: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 92%; 
-            max-width: 400px; 
-            background: #181922; 
-            border-radius: 25px; 
-            padding: 0 10px; 
-            height: 70px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            border: 1px solid #2d2e3d; 
-            z-index: 1000; 
-            box-sizing: border-box;
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            width: 92%; max-width: 400px; background: #181922; border-radius: 25px; 
+            padding: 0 10px; height: 70px; display: flex; justify-content: space-between; 
+            align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #2d2e3d; z-index: 1000; box-sizing: border-box;
         }
         .nav-item { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            color: #585966; 
-            font-size: 10px; 
-            gap: 4px; 
-            cursor: pointer; 
-            width: 20%; 
-            text-decoration: none;
-            transition: all 0.3s; 
-            flex-shrink: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: #585966; font-size: 10px; gap: 4px; cursor: pointer; width: 20%; 
+            text-decoration: none; transition: all 0.3s; flex-shrink: 0;
         }
         .nav-item.active { color: white; }
-        
-        .wallet-btn-wrap {
-            width: 20%;
-            display: flex;
-            justify-content: center;
-            position: relative;
-            flex-shrink: 0;
-        }
+        .wallet-btn-wrap { width: 20%; display: flex; justify-content: center; position: relative; flex-shrink: 0; }
         .wallet-btn { 
-            background: var(--accent-blue); 
-            width: 54px; 
-            height: 54px; 
-            border-radius: 18px; 
-            margin-top: -30px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            color: white; 
-            border: 5px solid var(--bg-body); 
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); 
-            flex-shrink: 0;
+            background: var(--accent-blue); width: 54px; height: 54px; border-radius: 18px; 
+            margin-top: -30px; display: flex; justify-content: center; align-items: center; 
+            color: white; border: 5px solid var(--bg-body); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); flex-shrink: 0;
         }
 
     </style>
@@ -142,11 +105,11 @@
     <div class="balance-area">
         <div class="bal-box">
             <span class="label">Total <span class="usdt-txt">USDT</span></span>
-            <span class="val">$1,561.45</span>
+            <span class="val" id="totalUsdt">$0.00</span>
         </div>
         <div class="bal-box right">
             <span class="label">Total <span class="gold-txt">GOLD</span></span>
-            <span class="val">1,900</span>
+            <span class="val" id="totalGold">0</span>
         </div>
     </div>
 
@@ -172,20 +135,29 @@
 
     <!-- Coin List -->
     <div class="coin-list">
+        <!-- 1. USDT -->
         <div class="coin-item" onclick="location.href='deposit.html'">
             <div class="coin-left">
                 <div class="icon-circle"><img src="https://i.ibb.co.com/gLxQt9rP/images.png"></div>
                 <div class="coin-info"><h4>USDT</h4><p>Tether USD</p></div>
             </div>
-            <div class="coin-right"><div class="coin-bal">1,561.45</div><div class="coin-usd">$1,561.45</div></div>
+            <div class="coin-right">
+                <div class="coin-bal" id="coinBalUsdt">0.00</div>
+                <div class="coin-usd" id="coinUsdUsdt">$0.00</div>
+            </div>
         </div>
+        <!-- 2. GOLD -->
         <div class="coin-item" onclick="location.href='swap.html'">
             <div class="coin-left">
                 <div class="icon-circle"><img src="https://i.ibb.co.com/27zLYb0L/images-3.jpg"></div>
                 <div class="coin-info"><h4>GOLD</h4><p>FireLudo Asset</p></div>
             </div>
-            <div class="coin-right"><div class="coin-bal">1,900</div><div class="coin-usd">$19.00</div></div>
+            <div class="coin-right">
+                <div class="coin-bal" id="coinBalGold">0</div>
+                <div class="coin-usd" id="coinUsdGold">$0.00</div>
+            </div>
         </div>
+        <!-- 3. USDC (Static Placeholder) -->
         <div class="coin-item">
             <div class="coin-left">
                 <div class="icon-circle"><img src="https://i.ibb.co.com/cK2nLgVT/images-3.png"></div>
@@ -193,17 +165,11 @@
             </div>
             <div class="coin-right"><div class="coin-bal">0.00</div><div class="coin-usd">$0.00</div></div>
         </div>
+        <!-- 4. BNB (Static Placeholder) -->
         <div class="coin-item">
             <div class="coin-left">
                 <div class="icon-circle"><img src="https://i.ibb.co.com/7d8fnbGF/images-2.png"></div>
                 <div class="coin-info"><h4>BNB</h4><p>Binance Coin</p></div>
-            </div>
-            <div class="coin-right"><div class="coin-bal">0.0000</div><div class="coin-usd">$0.00</div></div>
-        </div>
-        <div class="coin-item">
-            <div class="coin-left">
-                <div class="icon-circle"><img src="https://i.ibb.co.com/BJKkSTq/images-4.png"></div>
-                <div class="coin-info"><h4>TRX</h4><p>Tron Network</p></div>
             </div>
             <div class="coin-right"><div class="coin-bal">0.0000</div><div class="coin-usd">$0.00</div></div>
         </div>
@@ -235,5 +201,60 @@
     </div>
 </div>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
+
+<script>
+    // ফায়ারবেস কনফিগ
+    const firebaseConfig = {
+        apiKey: "AIzaSyCaA8ENsK1fMw4U88CNLU60tO4ZfRj01bE",
+        authDomain: "fireludo1-54e54.firebaseapp.com",
+        projectId: "fireludo1-54e54",
+        storageBucket: "fireludo1-54e54.firebasestorage.app",
+        messagingSenderId: "558876956952",
+        appId: "1:558876956952:web:1c849226cbaf956385266d",
+        measurementId: "G-VQ93CQZNXN"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ব্যালেন্স চেক এবং রিয়েল-টাইম আপডেট
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            db.collection("users").doc(user.uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    
+                    // USDT ব্যালেন্স (ডিফল্ট ০.০০)
+                    const usdtBalance = userData.balance || 0;
+                    // GOLD ব্যালেন্স (ডিফল্ট ০)
+                    const goldBalance = userData.gold || 0;
+                    
+                    // ১. টপ ব্যালেন্স সেকশন আপডেট
+                    document.getElementById("totalUsdt").innerText = "$" + usdtBalance.toFixed(2);
+                    document.getElementById("totalGold").innerText = goldBalance;
+
+                    // ২. কয়েন লিস্ট আপডেট (USDT)
+                    document.getElementById("coinBalUsdt").innerText = usdtBalance.toFixed(2);
+                    document.getElementById("coinUsdUsdt").innerText = "$" + usdtBalance.toFixed(2);
+
+                    // ৩. কয়েন লিস্ট আপডেট (GOLD)
+                    // ধরে নিচ্ছি ১০০ GOLD = $১.০০ (আপনার অরিজিনাল কোডের ১৯০০ = $১৯.০০ লজিক অনুযায়ী)
+                    const goldToUsd = goldBalance / 100;
+                    document.getElementById("coinBalGold").innerText = goldBalance;
+                    document.getElementById("coinUsdGold").innerText = "$" + goldToUsd.toFixed(2);
+                }
+            });
+        } else {
+            // লগইন না থাকলে ইনডেক্স পেজে পাঠিয়ে দেবে
+            window.location.href = "index.html";
+        }
+    });
+</script>
+
 </body>
-</html>
+                                                                                                                      </html>
