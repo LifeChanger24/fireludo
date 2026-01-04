@@ -79,61 +79,25 @@
         .win-user-name { font-size: 7px; color: var(--text-muted); text-align: center; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .win-amt { font-size: 9px; color: var(--green); font-weight: 800; text-align: center; margin-top: 1px; }
 
-        /* --- FIXED BOTTOM NAV (আপনার ফিক্সড ডিজাইন) --- */
+        /* --- FIXED BOTTOM NAV --- */
         .bottom-nav-container { 
-            position: fixed; 
-            bottom: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 92%; 
-            max-width: 400px; 
-            background: #181922; 
-            border-radius: 25px; 
-            padding: 0 10px; 
-            height: 70px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            border: 1px solid #2d2e3d; 
-            z-index: 1000; 
-            box-sizing: border-box;
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            width: 92%; max-width: 400px; background: #181922; border-radius: 25px; 
+            padding: 0 10px; height: 70px; display: flex; justify-content: space-between; 
+            align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #2d2e3d; z-index: 1000; box-sizing: border-box;
         }
         .nav-item { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            color: #585966; 
-            font-size: 10px; 
-            gap: 4px; 
-            cursor: pointer; 
-            width: 20%; 
-            text-decoration: none;
-            transition: all 0.3s; 
-            flex-shrink: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: #585966; font-size: 10px; gap: 4px; cursor: pointer; width: 20%; 
+            text-decoration: none; transition: all 0.3s; flex-shrink: 0;
         }
         .nav-item.active { color: white; }
-        .wallet-btn-wrap {
-            width: 20%;
-            display: flex;
-            justify-content: center;
-            position: relative;
-            flex-shrink: 0;
-        }
+        .wallet-btn-wrap { width: 20%; display: flex; justify-content: center; position: relative; flex-shrink: 0; }
         .wallet-btn { 
-            background: var(--accent-blue); 
-            width: 54px; 
-            height: 54px; 
-            border-radius: 18px; 
-            margin-top: -30px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            color: white; 
-            border: 5px solid var(--bg-body); 
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); 
-            flex-shrink: 0;
+            background: var(--accent-blue); width: 54px; height: 54px; border-radius: 18px; 
+            margin-top: -30px; display: flex; justify-content: center; align-items: center; 
+            color: white; border: 5px solid var(--bg-body); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); flex-shrink: 0;
         }
     </style>
 </head>
@@ -151,7 +115,9 @@
             <div class="balance-pill">
                 <span class="coin-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#26A17B"/><path d="M12.5 7H7V9H11V17H13V9H17V7H12.5Z" fill="white"/></svg>
-                </span> 1,561
+                </span> 
+                <!-- Dynamic Balance Span -->
+                <span id="userBalance">0.00</span>
                 <div class="plus-btn" onclick="location.href='deposit.html'">+</div>
             </div>
             <div class="notif-btn" onclick="location.href='notification.html'">
@@ -201,7 +167,6 @@
             <div class="win-card-mini"><div class="win-img-small"><img src="https://i.ibb.co/kgMvN4mM/1767131563302.png"></div><div class="win-user-name">👤 Hamim_K</div><div class="win-amt">$300.00</div></div>
             <div class="win-card-mini"><div class="win-img-small"><img src="https://i.ibb.co/B2g1FxVB/1767134728950.png"></div><div class="win-user-name">👤 User_X</div><div class="win-amt">$250.00</div></div>
             <div class="win-card-mini"><div class="win-img-small"><img src="https://i.ibb.co/Xrccfq7z/1767131289828.png"></div><div class="win-user-name">👤 Kib24</div><div class="win-amt">$50.00</div></div>
-            <!-- Duplicate for Loop -->
             <div class="win-card-mini"><div class="win-img-small"><img src="https://i.ibb.co/SwZCt4Zb/1767131189698.png"></div><div class="win-user-name">👤 Asif_77</div><div class="win-amt">$500.00</div></div>
             <div class="win-card-mini"><div class="win-img-small"><img src="https://i.ibb.co/HTwwkr7Y/1767130627909.png"></div><div class="win-user-name">👤 Rana_Pro</div><div class="win-amt">$120.00</div></div>
             <div class="win-card-mini"><div class="win-img-small"><img src="https://i.ibb.co/kgMvN4mM/1767131563302.png"></div><div class="win-user-name">👤 Hamim_K</div><div class="win-amt">$300.00</div></div>
@@ -233,6 +198,47 @@
         </a>
     </div>
 </div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-firestore-compat.js"></script>
+
+<script>
+    // ফায়ারবেস কনফিগ (আপনার দেওয়া কোড অনুযায়ী)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCaA8ENsK1fMw4U88CNLU60tO4ZfRj01bE",
+        authDomain: "fireludo1-54e54.firebaseapp.com",
+        projectId: "fireludo1-54e54",
+        storageBucket: "fireludo1-54e54.firebasestorage.app",
+        messagingSenderId: "558876956952",
+        appId: "1:558876956952:web:1c849226cbaf956385266d",
+        measurementId: "G-VQ93CQZNXN"
+    };
+
+    // ফায়ারবেস ইনিশিয়ালাইজেশন
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ইউজারের লগইন এবং ব্যালেন্স চেক
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // ডাটাবেস থেকে রিয়েল-টাইম ব্যালেন্স আপডেট
+            db.collection("users").doc(user.uid).onSnapshot((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    const currentBalance = userData.balance || 0;
+                    // ব্যালেন্স আপডেট (২ দশমিক ঘর পর্যন্ত)
+                    document.getElementById("userBalance").innerText = currentBalance.toFixed(2);
+                }
+            });
+        } else {
+            // লগইন না থাকলে ইডেক্স পেজে পাঠিয়ে দেবে
+            window.location.href = "index.html";
+        }
+    });
+</script>
 
 </body>
 </html>
